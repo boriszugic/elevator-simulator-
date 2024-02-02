@@ -1,16 +1,36 @@
 package src;
 
-import java.net.DatagramSocket;
+import lombok.Getter;
 
+import java.net.DatagramSocket;
+import java.util.List;
+
+@Getter
 public class Elevator implements Runnable{
 
-    DatagramSocket socket;
 
-    int currentFloor, destinationFloor, numOfPassengers;
+    DatagramSocket socket;
+    Motor motor;
+    Door door;
+    List<ElevatorButton> buttons;
+    int currentFloor, destinationFloor, numOfFloors, numOfPassengers;
+
+
+    public Elevator(){
+        motor = new Motor();
+        door = new Door();
+        currentFloor = 0;
+        destinationFloor = 0;
+        numOfPassengers = 0;
+
+        for (int i = 0; i < numOfFloors; i++){
+            buttons.add(new ElevatorButton(i));
+        }
+    }
 
     public static void main(String[] args){
-        Elevator elevator = new Elevator();
-        new Thread(elevator).start();
+        //Elevator elevator = new Elevator();
+        //new Thread(elevator).start();
     }
 
     @Override
@@ -39,5 +59,9 @@ public class Elevator implements Runnable{
      */
     private void sendUpdate(){
 
+    }
+
+    public int getPort() {
+        return socket.getLocalPort();
     }
 }
