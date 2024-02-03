@@ -36,7 +36,7 @@ public class Main {
         Scheduler scheduler = Scheduler.getInstance();
 
         for (int i = 0; i < numOfElevators; i++){
-            Elevator elevator = new Elevator();
+            Elevator elevator = new Elevator(numOfFloors);
             scheduler.addElevator(elevator);
             new Thread(elevator).start();
         }
