@@ -18,7 +18,7 @@ public class Scheduler implements Runnable{
     List<Floor> floors;
     List<Elevator> elevators;
 
-    private Scheduler() {
+    public Scheduler() {
         try {
             this.socket = new DatagramSocket(IN_PORT);
             this.elevators = new ArrayList<>();
@@ -75,9 +75,7 @@ public class Scheduler implements Runnable{
      * @return chosenElevator
      */
     private Elevator chooseElevator(int direction, int floorNum){
-
-
-        return new Elevator();
+        return ;
     }
 
     /** Create packet with elevator-needed information
@@ -107,5 +105,21 @@ public class Scheduler implements Runnable{
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * Default getter for the current list of floors.
+     * @return floors The list of associated floors.
+     */
+    public List<Floor> getFloors() {
+        return floors;
+    }
+
+    /**
+     * Default getter for the current list of elevators.
+     * @return elevators The list of associated elevators.
+     */
+    public List<Elevator> getElevators() {
+        return elevators;
     }
 }

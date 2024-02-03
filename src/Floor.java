@@ -79,7 +79,7 @@ public class Floor implements Runnable {
      * @param buttonType
      * @param port
      */
-    private DatagramPacket createPacket(ButtonType buttonType, int floorNum, int port) {
+    public DatagramPacket createPacket(ButtonType buttonType, int floorNum, int port) {
 
         byte[] data = new byte[3];
 
@@ -102,6 +102,22 @@ public class Floor implements Runnable {
      */
     private void parsePacket(DatagramPacket packet) {
 
-
     }
+
+    /**
+     * Default getter for IN_PORT parameter.
+     * @return The current IN_PORT value
+     */
+    public int getIN_PORT() {
+        return IN_PORT;
+    }
+
+    /**
+     * Default getter for the floor number.
+     * @return The floor number of this occurrence.
+     */
+    public int getFLOOR_NUM() {
+        return FLOOR_NUM;
+    }
+
 }

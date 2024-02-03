@@ -3,6 +3,7 @@ package src;
 import lombok.Getter;
 
 import java.net.DatagramSocket;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -15,8 +16,8 @@ public class Elevator implements Runnable{
     DatagramSocket socket;
     Motor motor;
     Door door;
-    List<ElevatorButton> buttons;
-    List<ElevatorLamp> lamps;
+    List<ElevatorButton> buttons = new ArrayList<>();
+    List<ElevatorLamp> lamps = new ArrayList<>();
     int currentFloor;
     int destinationFloor;
     int numOfFloors;
@@ -26,13 +27,14 @@ public class Elevator implements Runnable{
         return nextPort++;
     }
 
-    public Elevator(){
+    public Elevator(int numFloors){
         port = getNextPort();
         motor = new Motor();
         door = new Door();
         currentFloor = 0;
         destinationFloor = 0;
         numOfPassengers = 0;
+        this.numOfFloors = numFloors;
 
         for (int i = 0; i < numOfFloors; i++){
             buttons.add(new ElevatorButton(i));
@@ -61,8 +63,12 @@ public class Elevator implements Runnable{
      *
      * @param floorNum
      */
-    private void move(int floorNum){
-
+    public Boolean move(int floorNum){
+        if(floorNum >=0 && floorNum != currentFloor && floorNum <=numOfFloors){
+            currentFloor = floorNum;
+            return true;
+        }
+        return false;
     }
 
     /** Sends update to Floor through Scheduler that it has arrived at destFloor
@@ -75,4 +81,29 @@ public class Elevator implements Runnable{
     public int getPort() {
         return socket.getLocalPort();
     }
+
+    /**
+     * Default getter for current floor.
+     * @return currentFloor Floor of the elevator.
+     */
+    public int getCurrentFloor() {
+        return currentFloor;
+    }
+
+    /**
+     * Default getter for destination floor.
+     * @return destinationFloor Desired floor of the elevator.
+     */
+    public int getDestinationFloor() {
+        return destinationFloor;
+    }
+
+    /**
+     * Default getter for number of passengers.
+     * @return numOfPassengers Current number of passengers on elevator.
+     */
+    public int getNumOfPassengers() {
+        return numOfPassengers;
+    }
+
 }
