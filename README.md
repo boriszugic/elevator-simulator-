@@ -1,20 +1,41 @@
-# Introduction 
-TODO: Give a short introduction of your project. Let this section explain the objectives or the motivation behind this project. 
+# SYSC3303 Project Iteration 1 - Documentation
+Date: February 3rd, 2024
 
-# Getting Started
-TODO: Guide users through getting your code up and running on their own system. In this section you can talk about:
-1.	Installation process
-2.	Software dependencies
-3.	Latest releases
-4.	API references
+# Authors
+  - Boris Zugic,    101223924
+  - Cole McPherson, 101185260
+  - Johnny Nguyen,  101185885
+  - Nitin Alagu,    101223924
+  - Evan Baldwin,   101222276
 
-# Build and Test
-TODO: Describe and show how to build your code and run the tests. 
+# Description
+This assignment simulates an elevator system with a floor subsystem, a series of elevators, and a scheduler to determine
+the operation of the elevators based on the input from floors. This iteration utilizes synchronized threads which communicate
+between each other to parse a data input from the floor system. The current design does not utilize the scheduler to determine
+the usage of elevators, but rather the floors and elevators communicate through the scheduler. 
 
-# Contribute
-TODO: Explain how other users and developers can contribute to make your code better. 
+This iteration has partially implemented UDP elements from future iterations, and utilizes datagrams/sockets to send and receive
+information between threads. This is preparing for the multiple independant elevators which will be implemented in iteration 3. 
 
-If you want to learn more about creating good readme files then refer the following [guidelines](https://docs.microsoft.com/en-us/azure/devops/repos/git/create-a-readme?view=azure-devops). You can also seek inspiration from the below readme files:
-- [ASP.NET Core](https://github.com/aspnet/Home)
-- [Visual Studio Code](https://github.com/Microsoft/vscode)
-- [Chakra Core](https://github.com/Microsoft/ChakraCore)
+# Using the program
+1) Utilizing the IntelliJ IDE, execute the main() method contained within Main.java.
+There is currently no print output for the system, as this is an early iteration
+intended to test the communication between subsystems.
+
+# Deliverables
+  - Code necessary for program execution
+    ButtonType.java, Door.java, Elevator.java, Door.java, ElevatorButton.java, ElevatorLamp.java,
+    Floor.java, Main.java, Motor.java, Scheduler.java
+  Performed by: Boris Zugic, Nitin Alagu, Evan Baldwin
+
+  - JUnit test cases
+    ElevatorTests.java, FloorTests.java, MainTests.java, SchedulerTests.java
+  Performed by: Evan Baldwin, Boris Zugic
+
+  - UML Class Diagram
+    SYSC3303_Iteration1_UML_Class.png, SYSC3303_Iteration1_UML_Class.drawio
+  Performed by: Cole McPherson
+
+  - UML Sequence Diagrams
+
+  Performed by: Johnny Nguyen
