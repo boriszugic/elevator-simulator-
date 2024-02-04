@@ -7,12 +7,12 @@ import java.net.*;
 
 public class Floor implements Runnable {
 
-    private static int nextPort = 0;
+    private static int nextPort = 1;
     private static int nextFloorNum = 0;
     private final int OUT_PORT = 23;
-    private final int IN_PORT;
+    private final int port;
     @Getter
-    private final int FLOOR_NUM;
+    private final int floorNum;
 
     DatagramSocket socket;
 
@@ -25,10 +25,10 @@ public class Floor implements Runnable {
     }
 
     public Floor() {
-        this.IN_PORT = getNextPort();
-        this.FLOOR_NUM = getNextFloorNum();
+        this.port = getNextPort();
+        this.floorNum = getNextFloorNum();
         try {
-            this.socket = new DatagramSocket(IN_PORT);
+            this.socket = new DatagramSocket(port);
         } catch (SocketException e) {
             throw new RuntimeException("Error creating DatagramSocket", e);
         }
@@ -36,7 +36,7 @@ public class Floor implements Runnable {
 
     public static void main(String[] args) {
         //Floor floor = new Floor();
-        //System.out.println("Port #" + floor.IN_PORT);
+        //System.out.println("Port #" + floor.port);
         //new Thread(floor).start();
     }
 
@@ -62,6 +62,7 @@ public class Floor implements Runnable {
         try
         {
             socket.send(packet);
+            System.out.println("Request sent.");
         }
         catch (IOException e)
         {
@@ -105,19 +106,19 @@ public class Floor implements Runnable {
     }
 
     /**
-     * Default getter for IN_PORT parameter.
-     * @return The current IN_PORT value
+     * Default getter for port parameter.
+     * @return The current port value
      */
-    public int getIN_PORT() {
-        return IN_PORT;
+    public int getport() {
+        return port;
     }
 
     /**
      * Default getter for the floor number.
      * @return The floor number of this occurrence.
      */
-    public int getFLOOR_NUM() {
-        return FLOOR_NUM;
+    public int getfloorNum() {
+        return floorNum;
     }
 
 }

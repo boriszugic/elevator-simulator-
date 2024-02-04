@@ -41,12 +41,13 @@ public class Main {
             new Thread(elevator).start();
         }
 
+        new Thread(scheduler).start();
+
         for (int i = 0; i < numOfFloors; i++){
             Floor floor = new Floor();
             scheduler.addFloor(floor);
             new Thread(floor).start();
         }
 
-        new Thread(scheduler).start();
     }
 }

@@ -3,6 +3,7 @@ package src;
 import lombok.Getter;
 
 import java.net.DatagramSocket;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,6 +36,12 @@ public class Elevator implements Runnable{
         destinationFloor = 0;
         numOfPassengers = 0;
         this.numOfFloors = numFloors;
+
+        try {
+            this.socket = new DatagramSocket(port);
+        } catch (SocketException e) {
+            throw new RuntimeException("Error creating DatagramSocket", e);
+        }
 
         for (int i = 0; i < numOfFloors; i++){
             buttons.add(new ElevatorButton(i));
