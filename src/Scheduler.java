@@ -13,14 +13,14 @@ import java.util.List;
  */
 public class Scheduler implements Runnable{
 
-    private final int IN_PORT = 23;
+    private final int port = 23;
     DatagramSocket socket;
     List<Floor> floors;
     List<Elevator> elevators;
 
-    public Scheduler() {
+    private Scheduler() {
         try {
-            this.socket = new DatagramSocket(IN_PORT);
+            this.socket = new DatagramSocket(port);
             this.elevators = new ArrayList<>();
             this.floors = new ArrayList<>();
         } catch (SocketException e) {
@@ -40,18 +40,25 @@ public class Scheduler implements Runnable{
     }
 
     public static void main(String[] args){
-        Scheduler scheduler = Scheduler.getInstance();
-        new Thread(scheduler).start();
+        //Scheduler scheduler = Scheduler.getInstance();
+        //new Thread(scheduler).start();
     }
 
     @Override
     public void run() {
+        while (true) {
+            waitRequest();
+            // parse (choose elevator)
+            // send
+        }
+    }
+
+    private void waitRequest() {
+        DatagramPacket receivedPacket = new DatagramPacket(new byte[3], 3);
         try {
-            DatagramPacket receivedPacket = new DatagramPacket(new byte[3], 3);
             socket.receive(receivedPacket);
-
+            System.out.println("Request received.");
             parseRequest(receivedPacket);
-
         } catch (IOException e) {
             socket.close();
             throw new RuntimeException(e);
@@ -64,8 +71,16 @@ public class Scheduler implements Runnable{
      */
     private void parseRequest(DatagramPacket packet){
         byte[] data = packet.getData();
-        Elevator elevator = chooseElevator((int) data[0], (int) data[1]);
-        sendRequest(createPacket((int) data[1], elevator.getPort()));
+        // error checking
+        if (isValid(data)){
+            Elevator elevator = chooseElevator(data[0], data[1]);
+            sendRequest(createPacket(data[1], elevator.getPort()));
+        }
+    }
+
+    private boolean isValid(byte[] data) {
+        int floorNum = data[1];
+        return floorNum >= 0 && floorNum <= floors.size();
     }
 
     /**
@@ -75,7 +90,7 @@ public class Scheduler implements Runnable{
      * @return chosenElevator
      */
     private Elevator chooseElevator(int direction, int floorNum){
-        return ;
+        return elevators.getFirst();
     }
 
     /** Create packet with elevator-needed information
@@ -86,6 +101,7 @@ public class Scheduler implements Runnable{
     private DatagramPacket createPacket(int floorNum, int port){
         try
         {
+            // pass in the port number of floor where req was sent from
             return new DatagramPacket(new byte[]{(byte) floorNum, 0}, 2,
                                       InetAddress.getLocalHost(), port);
         }
@@ -94,7 +110,6 @@ public class Scheduler implements Runnable{
             throw new RuntimeException(e);
         }
     }
-
 
     /** Send packet
      *
@@ -105,21 +120,5 @@ public class Scheduler implements Runnable{
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    /**
-     * Default getter for the current list of floors.
-     * @return floors The list of associated floors.
-     */
-    public List<Floor> getFloors() {
-        return floors;
-    }
-
-    /**
-     * Default getter for the current list of elevators.
-     * @return elevators The list of associated elevators.
-     */
-    public List<Elevator> getElevators() {
-        return elevators;
     }
 }

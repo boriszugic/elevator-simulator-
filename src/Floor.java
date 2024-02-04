@@ -7,12 +7,25 @@ import java.net.*;
 
 public class Floor implements Runnable {
 
-    private static int nextPort = 0;
+    private static int nextPort = 1;
     private static int nextFloorNum = 0;
     private final int OUT_PORT = 23;
-    private final int IN_PORT;
+    /**
+     * -- GETTER --
+     *  Default getter for port parameter.
+     *
+     * @return The current port value
+     */
     @Getter
-    private final int FLOOR_NUM;
+    private final int port;
+    /**
+     * -- GETTER --
+     *  Default getter for the floor number.
+     *
+     * @return The floor number of this occurrence.
+     */
+    @Getter
+    private final int floorNum;
 
     DatagramSocket socket;
 
@@ -25,10 +38,10 @@ public class Floor implements Runnable {
     }
 
     public Floor() {
-        this.IN_PORT = getNextPort();
-        this.FLOOR_NUM = getNextFloorNum();
+        this.port = getNextPort();
+        this.floorNum = getNextFloorNum();
         try {
-            this.socket = new DatagramSocket(IN_PORT);
+            this.socket = new DatagramSocket(port);
         } catch (SocketException e) {
             throw new RuntimeException("Error creating DatagramSocket", e);
         }
@@ -36,7 +49,7 @@ public class Floor implements Runnable {
 
     public static void main(String[] args) {
         //Floor floor = new Floor();
-        //System.out.println("Port #" + floor.IN_PORT);
+        //System.out.println("Port #" + floor.port);
         //new Thread(floor).start();
     }
 
@@ -45,7 +58,10 @@ public class Floor implements Runnable {
         // STARTING POINT: floor makes a request, nothing happens until then
         // QUESTION: how should we simulate the making of a request?
         // idea 1: we have random time intervals when the requests are sent (with random floor numbers)
-        sendRequest(ButtonType.UP, 3, OUT_PORT);
+        while (true) {
+            sendRequest(ButtonType.UP, 1, OUT_PORT);
+            waitRequest();
+        }
     }
 
     /**
@@ -62,6 +78,7 @@ public class Floor implements Runnable {
         try
         {
             socket.send(packet);
+            System.out.println("Request to send elevator sent.");
         }
         catch (IOException e)
         {
@@ -83,8 +100,8 @@ public class Floor implements Runnable {
 
         byte[] data = new byte[3];
 
-        data[1] = (byte) ((buttonType == ButtonType.UP) ? 1 : 0);
-        data[2] = (byte) floorNum;
+        data[0] = (byte) ((buttonType == ButtonType.UP) ? 1 : 0);
+        data[1] = (byte) floorNum;
 
         try
         {
@@ -100,24 +117,51 @@ public class Floor implements Runnable {
      *
      * @param packet
      */
-    private void parsePacket(DatagramPacket packet) {
+    private void parseRequest(DatagramPacket packet) {
 
+        switch (packet.getData()[0]) {
+            case 0: // open door
+                board();
+                break;
+            case 1: // close door
+                pressElevatorButton(1);
+                break;
+        }
     }
 
-    /**
-     * Default getter for IN_PORT parameter.
-     * @return The current IN_PORT value
+    /** Presses elevator button
+     *
+     * @param floorNum
      */
-    public int getIN_PORT() {
-        return IN_PORT;
+    private void pressElevatorButton(int floorNum) {
+        // sends request
     }
 
-    /**
-     * Default getter for the floor number.
-     * @return The floor number of this occurrence.
-     */
-    public int getFLOOR_NUM() {
-        return FLOOR_NUM;
+    private void board() {
+        try
+        {
+            socket.send(new DatagramPacket(new byte[]{0, 0}, 2,
+                        InetAddress.getLocalHost(), OUT_PORT));
+            System.out.println("Request to close doors sent.");
+        }
+        catch (IOException e)
+        {
+            socket.close();
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void waitRequest(){
+        try {
+            DatagramPacket receivedPacket = new DatagramPacket(new byte[2], 2);
+            socket.receive(receivedPacket);
+
+            parseRequest(receivedPacket);
+
+        } catch (IOException e) {
+            socket.close();
+            throw new RuntimeException(e);
+        }
     }
 
 }
