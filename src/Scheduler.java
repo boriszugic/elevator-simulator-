@@ -13,14 +13,14 @@ import java.util.List;
  */
 public class Scheduler implements Runnable{
 
-    private final int IN_PORT = 23;
+    private final int port = 23;
     DatagramSocket socket;
     List<Floor> floors;
     List<Elevator> elevators;
 
-    public Scheduler() {
+    private Scheduler() {
         try {
-            this.socket = new DatagramSocket(IN_PORT);
+            this.socket = new DatagramSocket(port);
             this.elevators = new ArrayList<>();
             this.floors = new ArrayList<>();
         } catch (SocketException e) {
@@ -75,7 +75,8 @@ public class Scheduler implements Runnable{
      * @return chosenElevator
      */
     private Elevator chooseElevator(int direction, int floorNum){
-        return ;
+
+        return elevators.get(0);
     }
 
     /** Create packet with elevator-needed information
