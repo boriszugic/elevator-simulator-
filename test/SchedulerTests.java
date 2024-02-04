@@ -20,7 +20,7 @@ public class SchedulerTests {
      */
     @Before
     public void setUp(){
-        scheduler = new Scheduler();
+        scheduler = Scheduler.getInstance();
     }
 
     /**
