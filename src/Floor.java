@@ -10,20 +10,8 @@ public class Floor implements Runnable {
     private static int nextPort = 1;
     private static int nextFloorNum = 0;
     private final int OUT_PORT = 23;
-    /**
-     * -- GETTER --
-     *  Default getter for port parameter.
-     *
-     * @return The current port value
-     */
     @Getter
     private final int port;
-    /**
-     * -- GETTER --
-     *  Default getter for the floor number.
-     *
-     * @return The floor number of this occurrence.
-     */
     @Getter
     private final int floorNum;
 
@@ -120,6 +108,7 @@ public class Floor implements Runnable {
         }
     }
 
+
     /** Presses elevator button
      *
      * @param floorNum
@@ -148,11 +137,24 @@ public class Floor implements Runnable {
             socket.receive(receivedPacket);
 
             parseRequest(receivedPacket);
-
         } catch (IOException e) {
             socket.close();
             throw new RuntimeException(e);
         }
     }
+    /**
+     * Default getter for port parameter.
+     * @return The current port value
+     */
+    public int getport() {
+        return port;
+    }
 
+    /**
+     * Default getter for the floor number.
+     * @return The floor number of this occurrence.
+     */
+    public int getfloorNum() {
+        return floorNum;
+    }
 }

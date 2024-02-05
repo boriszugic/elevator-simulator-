@@ -49,7 +49,7 @@ public class Elevator implements Runnable {
             throw new RuntimeException("Error creating DatagramSocket", e);
         }
 
-        for (int i = 0; i < numOfFloors; i++) {
+        for (int i = 0; i < numOfFloors; i++){
             buttons.add(new ElevatorButton(i));
             lamps.add(new ElevatorLamp(i));
         }

@@ -90,7 +90,7 @@ public class Scheduler implements Runnable{
      * @return chosenElevator
      */
     private Elevator chooseElevator(int direction, int floorNum){
-        return elevators.getFirst();
+       return elevators.getFirst();
     }
 
     /** Create packet with elevator-needed information
