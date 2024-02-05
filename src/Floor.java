@@ -10,6 +10,7 @@ public class Floor implements Runnable {
     private static int nextPort = 1;
     private static int nextFloorNum = 0;
     private final int OUT_PORT = 23;
+    @Getter
     private final int port;
     @Getter
     private final int floorNum;
@@ -45,7 +46,10 @@ public class Floor implements Runnable {
         // STARTING POINT: floor makes a request, nothing happens until then
         // QUESTION: how should we simulate the making of a request?
         // idea 1: we have random time intervals when the requests are sent (with random floor numbers)
-        sendRequest(ButtonType.UP, 3, OUT_PORT);
+        while (true) {
+            sendRequest(ButtonType.UP, 1, OUT_PORT);
+            waitRequest();
+        }
     }
 
     /**
@@ -56,16 +60,11 @@ public class Floor implements Runnable {
      * @param port
      */
     private void sendRequest(ButtonType buttonType, int floorNum, int port) {
-
         DatagramPacket packet = createPacket(buttonType, floorNum, port);
-
-        try
-        {
+        try {
             socket.send(packet);
-            System.out.println("Request sent.");
-        }
-        catch (IOException e)
-        {
+            System.out.println("Request to send elevator sent.");
+        } catch (IOException e) {
             socket.close();
             throw new RuntimeException(e);
         }
@@ -81,12 +80,9 @@ public class Floor implements Runnable {
      * @param port
      */
     public DatagramPacket createPacket(ButtonType buttonType, int floorNum, int port) {
-
         byte[] data = new byte[3];
-
-        data[1] = (byte) ((buttonType == ButtonType.UP) ? 1 : 0);
-        data[2] = (byte) floorNum;
-
+        data[0] = (byte) ((buttonType == ButtonType.UP) ? 1 : 0);
+        data[1] = (byte) floorNum;
         try
         {
             return new DatagramPacket(data, data.length, InetAddress.getLocalHost(), port);
@@ -101,10 +97,51 @@ public class Floor implements Runnable {
      *
      * @param packet
      */
-    private void parsePacket(DatagramPacket packet) {
-
+    private void parseRequest(DatagramPacket packet) {
+        switch (packet.getData()[0]) {
+            case 0: // open door
+                board();
+                break;
+            case 1: // close door
+                pressElevatorButton(1);
+                break;
+        }
     }
 
+
+    /** Presses elevator button
+     *
+     * @param floorNum
+     */
+    private void pressElevatorButton(int floorNum) {
+        // sends request
+    }
+
+    private void board() {
+        try
+        {
+            socket.send(new DatagramPacket(new byte[]{0, 0}, 2,
+                        InetAddress.getLocalHost(), OUT_PORT));
+            System.out.println("Request to close doors sent.");
+        }
+        catch (IOException e)
+        {
+            socket.close();
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void waitRequest(){
+        try {
+            DatagramPacket receivedPacket = new DatagramPacket(new byte[2], 2);
+            socket.receive(receivedPacket);
+
+            parseRequest(receivedPacket);
+        } catch (IOException e) {
+            socket.close();
+            throw new RuntimeException(e);
+        }
+    }
     /**
      * Default getter for port parameter.
      * @return The current port value
@@ -120,5 +157,4 @@ public class Floor implements Runnable {
     public int getfloorNum() {
         return floorNum;
     }
-
 }

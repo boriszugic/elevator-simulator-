@@ -33,8 +33,8 @@ public class FloorTests {
     @Test
     public void testInit(){
         for (int i = 1; i <= numFloors; i++){
-            assertEquals(floors.get(i).getport(), i);
-            assertEquals(floors.get(i).getfloorNum(), i);
+            assertEquals(floors.get(i).getPort(), i);
+            assertEquals(floors.get(i).getFloorNum(), i);
         }
     }
 

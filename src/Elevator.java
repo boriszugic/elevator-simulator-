@@ -2,40 +2,46 @@ package src;
 
 import lombok.Getter;
 
-import java.net.DatagramSocket;
-import java.net.SocketException;
+import java.io.IOException;
+import java.net.*;
 import java.util.ArrayList;
 import java.util.List;
 
 @Getter
-public class Elevator implements Runnable{
+public class Elevator implements Runnable {
 
+    private static final int MAX_NUM_OF_PASSENGERS = 10;
+    private static final int SCHEDULER_PORT = 23;
     private static int nextPort = 0;
     @Getter
     private final int port;
-
+    private int floorPort;
     DatagramSocket socket;
     Motor motor;
     Door door;
+    Display display;
     List<ElevatorButton> buttons = new ArrayList<>();
     List<ElevatorLamp> lamps = new ArrayList<>();
     int currentFloor;
     int destinationFloor;
     int numOfFloors;
     int numOfPassengers;
+    boolean isAvailable;
 
     static synchronized int getNextPort() {
         return nextPort++;
     }
 
-    public Elevator(int numFloors){
+    public Elevator(int numFloors) {
         port = getNextPort();
-        motor = new Motor();
+        motor = new Motor(this);
         door = new Door();
+        display = new Display();
         currentFloor = 0;
         destinationFloor = 0;
         numOfPassengers = 0;
         this.numOfFloors = numFloors;
+        isAvailable = true;
 
         try {
             this.socket = new DatagramSocket(port);
@@ -49,7 +55,7 @@ public class Elevator implements Runnable{
         }
     }
 
-    public static void main(String[] args){
+    public static void main(String[] args) {
         //Elevator elevator = new Elevator();
         //new Thread(elevator).start();
     }
@@ -57,60 +63,67 @@ public class Elevator implements Runnable{
     @Override
     public void run() {
 
+        while (true) {
+            DatagramPacket receivedPacket = new DatagramPacket(new byte[3], 3);
+            try {
+                socket.receive(receivedPacket);
+                parseRequest(receivedPacket);
+            } catch (IOException e) {
+                socket.close();
+                throw new RuntimeException(e);
+            }
+        }
     }
 
-    /** Parses received data and updates attributes accordingly
-     *
+    /**
+     * Parses received data and updates attributes accordingly
      */
-    private void parseRequest(){
 
+    private void parseRequest(DatagramPacket packet){
+        int floorNum = packet.getData()[0];
+        move(floorNum);
     }
 
-    /** Moves to Floor #floorNum
+    /**
+     * Moves to Floor #floorNum
      *
      * @param floorNum
      */
-    public Boolean move(int floorNum){
-        if(floorNum >=0 && floorNum != currentFloor && floorNum <=numOfFloors){
-            currentFloor = floorNum;
-            return true;
-        }
-        return false;
+
+    public void move(int floorNum){
+        motor.move(floorNum);
+        door.open();
+        display.display(currentFloor);
+        sendUpdate();
     }
 
-    /** Sends update to Floor through Scheduler that it has arrived at destFloor
-     *
+    /**
+     * Sends update to Floor through Scheduler that it has arrived at destFloor
      */
     private void sendUpdate(){
+        try {
+            socket.send(createPacket(UpdateType.OPEN_DOORS));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
+
+    public DatagramPacket createPacket(UpdateType updateType){
+        try {
+            return new DatagramPacket(new byte[]{(byte) updateType.ordinal(), 0}, 2,
+                                      InetAddress.getLocalHost(), 1);
+        } catch (UnknownHostException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public int getPort() {
         return socket.getLocalPort();
     }
 
-    /**
-     * Default getter for current floor.
-     * @return currentFloor Floor of the elevator.
-     */
-    public int getCurrentFloor() {
-        return currentFloor;
-    }
 
-    /**
-     * Default getter for destination floor.
-     * @return destinationFloor Desired floor of the elevator.
-     */
-    public int getDestinationFloor() {
-        return destinationFloor;
+    private boolean isOverloaded(){
+        return numOfPassengers > MAX_NUM_OF_PASSENGERS ? true : false;
     }
-
-    /**
-     * Default getter for number of passengers.
-     * @return numOfPassengers Current number of passengers on elevator.
-     */
-    public int getNumOfPassengers() {
-        return numOfPassengers;
-    }
-
 }
