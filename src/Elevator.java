@@ -78,7 +78,8 @@ public class Elevator implements Runnable {
     /**
      * Parses received data and updates attributes accordingly
      */
-    private void parseRequest(DatagramPacket packet) {
+
+    private void parseRequest(DatagramPacket packet){
         int floorNum = packet.getData()[0];
         move(floorNum);
     }
@@ -88,7 +89,8 @@ public class Elevator implements Runnable {
      *
      * @param floorNum
      */
-    public void move(int floorNum) {
+
+    public void move(int floorNum){
         motor.move(floorNum);
         door.open();
         display.display(currentFloor);
@@ -98,7 +100,7 @@ public class Elevator implements Runnable {
     /**
      * Sends update to Floor through Scheduler that it has arrived at destFloor
      */
-    private void sendUpdate() {
+    private void sendUpdate(){
         try {
             socket.send(createPacket(UpdateType.OPEN_DOORS));
         } catch (IOException e) {
@@ -106,7 +108,8 @@ public class Elevator implements Runnable {
         }
     }
 
-    public DatagramPacket createPacket(UpdateType updateType) {
+
+    public DatagramPacket createPacket(UpdateType updateType){
         try {
             return new DatagramPacket(new byte[]{(byte) updateType.ordinal(), 0}, 2,
                                       InetAddress.getLocalHost(), 1);
@@ -117,5 +120,10 @@ public class Elevator implements Runnable {
 
     public int getPort() {
         return socket.getLocalPort();
+    }
+
+
+    private boolean isOverloaded(){
+        return numOfPassengers > MAX_NUM_OF_PASSENGERS ? true : false;
     }
 }

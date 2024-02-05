@@ -72,16 +72,11 @@ public class Floor implements Runnable {
      * @param port
      */
     private void sendRequest(ButtonType buttonType, int floorNum, int port) {
-
         DatagramPacket packet = createPacket(buttonType, floorNum, port);
-
-        try
-        {
+        try {
             socket.send(packet);
             System.out.println("Request to send elevator sent.");
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             socket.close();
             throw new RuntimeException(e);
         }
@@ -97,12 +92,9 @@ public class Floor implements Runnable {
      * @param port
      */
     public DatagramPacket createPacket(ButtonType buttonType, int floorNum, int port) {
-
         byte[] data = new byte[3];
-
         data[0] = (byte) ((buttonType == ButtonType.UP) ? 1 : 0);
         data[1] = (byte) floorNum;
-
         try
         {
             return new DatagramPacket(data, data.length, InetAddress.getLocalHost(), port);
@@ -118,7 +110,6 @@ public class Floor implements Runnable {
      * @param packet
      */
     private void parseRequest(DatagramPacket packet) {
-
         switch (packet.getData()[0]) {
             case 0: // open door
                 board();
