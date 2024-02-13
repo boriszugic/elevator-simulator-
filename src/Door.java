@@ -1,10 +1,6 @@
 package src;
 
-import lombok.Getter;
-
 public class Door {
-
-    @Getter
     private boolean isOpen;
 
     public Door(){

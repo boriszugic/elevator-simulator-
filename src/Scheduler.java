@@ -1,22 +1,22 @@
 package src;
 
-import lombok.Getter;
-
 import java.io.IOException;
 import java.net.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
-@Getter
+
 /** Singleton class
  *
  */
 public class Scheduler implements Runnable{
 
-    private final int port = 23;
+    private final int port = 51;
     DatagramSocket socket;
-    List<Floor> floors;
-    List<Elevator> elevators;
+    List<FloorStructure> floors;
+    List<ElevatorStructure> elevators;
 
     private Scheduler() {
         try {
@@ -28,57 +28,116 @@ public class Scheduler implements Runnable{
         }
     }
 
-    @Getter
     private static final Scheduler instance = new Scheduler();
 
-    public void addElevator(Elevator elevator) {
+    public static void main(String[] args){
+        Scheduler scheduler = Scheduler.getInstance();
+        initializeFloorsAndElevators();
+        for (FloorStructure floor : scheduler.getFloors()){
+            System.out.println(floor.toString());
+        }
+        for (ElevatorStructure elevator : scheduler.getElevators()){
+            System.out.println(elevator.toString());
+        }
+        /*
+        try {
+            TimeUnit.SECONDS.sleep(3);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        new Thread(scheduler).start();
+        */
+    }
+
+    private static void initializeFloorsAndElevators() {
+
+        boolean isFloorInitDone = false, isElevatorInitDone = false;
+
+        while (!isFloorInitDone || !isElevatorInitDone){
+
+            System.out.println("Adding...");
+
+            DatagramPacket packet = Scheduler.getInstance().waitRequest();
+            byte[] data = packet.getData();
+
+            switch (packet.getLength()){
+                // initialization done
+                case 1:
+                    if (packet.getData()[0] == 0){
+                        isFloorInitDone = true;
+                    }else{
+                        isElevatorInitDone = true;
+                    }
+                    break;
+                // floor init
+                case 2:
+                    Scheduler.getInstance().getFloors().add(new FloorStructure(data[0], data[1]));
+                    break;
+                // elevator init
+                case 3:
+                    Scheduler.getInstance().getElevators().add(new ElevatorStructure(
+                                                               data[0], ElevatorState.IDLE,
+                                                               data[1], data[2]));
+                    break;
+                default:
+                    System.out.println("Invalid message length.");
+                    break;
+            }
+        }
+    }
+
+    public void addElevator(ElevatorStructure elevator) {
         elevators.add(elevator);
     }
 
-    public void addFloor(Floor floor) {
+    public void addFloor(FloorStructure floor) {
         floors.add(floor);
     }
 
-    public static void main(String[] args){
-        //Scheduler scheduler = Scheduler.getInstance();
-        //new Thread(scheduler).start();
+    private static Scheduler getInstance() {
+        return instance;
     }
 
     @Override
     public void run() {
         while (true) {
-            waitRequest();
-            // parse (choose elevator)
-            // send
+            sendRequest(parseRequest(waitRequest()));
         }
     }
 
-    private void waitRequest() {
+    private DatagramPacket waitRequest() {
         DatagramPacket receivedPacket = new DatagramPacket(new byte[3], 3);
         try {
             socket.receive(receivedPacket);
             System.out.println("Request received.");
-            parseRequest(receivedPacket);
+            return receivedPacket;
         } catch (IOException e) {
             socket.close();
             throw new RuntimeException(e);
         }
     }
 
-    /** Parse the request from floor (MOST LIKELY TO BE SYNCHRONIZED)
+    /** Parse the request from floor
      *
      * @param packet
      */
-    private void parseRequest(DatagramPacket packet){
+    private DatagramPacket parseRequest(DatagramPacket packet){
         byte[] data = packet.getData();
         // error checking
         if (isValid(data)){
-            Elevator elevator = chooseElevator(data[0], data[1]);
-            sendRequest(createPacket(data[1], elevator.getPort()));
+            ElevatorStructure elevator = chooseElevator(data[0], data[1]);
+            return createPacket(data[1], elevator.getPort());
         }
+        throw new RuntimeException("Invalid request.");
     }
 
     private boolean isValid(byte[] data) {
+        if (data.length != 3) {
+            return false;
+        }
+        if (!(data[0] == 0 || data[0] == 1)){
+            return false;
+        }
         int floorNum = data[1];
         return floorNum >= 0 && floorNum <= floors.size();
     }
@@ -89,20 +148,19 @@ public class Scheduler implements Runnable{
      * @param floorNum
      * @return chosenElevator
      */
-    private Elevator chooseElevator(int direction, int floorNum){
-       return elevators.getFirst();
+    private ElevatorStructure chooseElevator(int direction, int floorNum){
+       return elevators.get(0);
     }
 
-    /** Create packet with elevator-needed information
+    /** Create packet with scheduler-needed information
      * Format:
-     * first byte : floorNum
-     * second byte : if needed
+     * first byte : floor number
+     * second byte : direction
      */
-    private DatagramPacket createPacket(int floorNum, int port){
+    private DatagramPacket createPacket(int floorNum, int direction){
         try
         {
-            // pass in the port number of floor where req was sent from
-            return new DatagramPacket(new byte[]{(byte) floorNum, 0}, 2,
+            return new DatagramPacket(new byte[]{(byte) floorNum, (byte) direction}, 2,
                                       InetAddress.getLocalHost(), port);
         }
         catch (UnknownHostException e)
@@ -120,5 +178,21 @@ public class Scheduler implements Runnable{
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    public DatagramSocket getSocket() {
+        return socket;
+    }
+
+    public List<FloorStructure> getFloors() {
+        return floors;
+    }
+
+    public List<ElevatorStructure> getElevators() {
+        return elevators;
     }
 }
