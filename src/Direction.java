@@ -1,6 +1,6 @@
 package src;
 
-public enum ButtonType {
+public enum Direction {
     UP,
     DOWN
 }
