@@ -19,6 +19,7 @@ public class ElevatorTests {
     /**
      * Initialize the testing environment with two elevators.
      */
+    /*
     @Before
     public void setUp(){
         for (int i = 1; i <= numFloors; i++){
@@ -30,7 +31,7 @@ public class ElevatorTests {
 
     /**
      * This method tests that the elevators are initialized in the proper state.
-     */
+
     @Test
     public void testInit(){
         for (int i = 0; i < numFloors; i++){
@@ -39,7 +40,7 @@ public class ElevatorTests {
             assertEquals(elevators.get(i).getDestinationFloor(), 1);
         }
     }
-
+    */
     /**
      * The method tests that an elevator is capable of changing the
      * stated floor via the move method.

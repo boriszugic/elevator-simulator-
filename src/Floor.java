@@ -1,32 +1,29 @@
 package src;
 
-import lombok.Getter;
-
 import java.io.IOException;
 import java.net.*;
+import java.util.Calendar;
+import java.util.LinkedList;
 
 public class Floor implements Runnable {
-
-    private static int nextPort = 1;
     private static int nextFloorNum = 0;
-    private final int OUT_PORT = 23;
-    @Getter
+    private static int nextPortNum = 0;
+    private final int SCHEDULER_PORT = 64;
     private final int port;
-    @Getter
     private final int floorNum;
 
     DatagramSocket socket;
-
-    static synchronized int getNextPort() {
-        return nextPort++;
-    }
 
     static synchronized int getNextFloorNum() {
         return nextFloorNum++;
     }
 
+    static synchronized int getNextPortNum() {
+        return nextPortNum++;
+    }
+
     public Floor() {
-        this.port = getNextPort();
+        this.port = getNextPortNum();
         this.floorNum = getNextFloorNum();
         try {
             this.socket = new DatagramSocket(port);
@@ -35,19 +32,18 @@ public class Floor implements Runnable {
         }
     }
 
-    public static void main(String[] args) {
-        //Floor floor = new Floor();
-        //System.out.println("Port #" + floor.port);
-        //new Thread(floor).start();
-    }
-
     @Override
     public void run() {
-        // STARTING POINT: floor makes a request, nothing happens until then
-        // QUESTION: how should we simulate the making of a request?
-        // idea 1: we have random time intervals when the requests are sent (with random floor numbers)
-        while (true) {
-            sendRequest(ButtonType.UP, 1, OUT_PORT);
+        LinkedList<RequestData> requests = FloorSubsystem.getRequests(this.getFloorNum());
+        Calendar currentTime = Calendar.getInstance();
+
+        while (!requests.isEmpty()) {
+            RequestData request = requests.poll();
+            while(request.getTime().compareTo(currentTime.getTime()) != 0){
+                //System.out.println(request.getTime().toString() + " : " + currentTime.getTime().toString());
+                currentTime = Calendar.getInstance();
+            }
+            sendRequest(request.getDirection(), this.floorNum, port);
             waitRequest();
         }
     }
@@ -59,7 +55,7 @@ public class Floor implements Runnable {
      * @param buttonType
      * @param port
      */
-    private void sendRequest(ButtonType buttonType, int floorNum, int port) {
+    private void sendRequest(Direction buttonType, int floorNum, int port) {
         DatagramPacket packet = createPacket(buttonType, floorNum, port);
         try {
             socket.send(packet);
@@ -73,19 +69,20 @@ public class Floor implements Runnable {
     /** Creates packet to be sent by socket
      * Packet Format:
      * first byte  : 0 for DOWN, 1 for UP
-     * second byte : floorNum
-     * third byte  : if needed
+     * second byte : floor number
+     * third byte  : port of sending floor socket
      * @param floorNum
      * @param buttonType
      * @param port
      */
-    public DatagramPacket createPacket(ButtonType buttonType, int floorNum, int port) {
+    public DatagramPacket createPacket(Direction buttonType, int floorNum, int port) {
         byte[] data = new byte[3];
-        data[0] = (byte) ((buttonType == ButtonType.UP) ? 1 : 0);
+        data[0] = (byte) ((buttonType == Direction.UP) ? 1 : 0);
         data[1] = (byte) floorNum;
+        data[2] = (byte) port;
         try
         {
-            return new DatagramPacket(data, data.length, InetAddress.getLocalHost(), port);
+            return new DatagramPacket(data, data.length, InetAddress.getLocalHost(), SCHEDULER_PORT);
         }
         catch (UnknownHostException e)
         {
@@ -102,9 +99,6 @@ public class Floor implements Runnable {
             case 0: // open door
                 board();
                 break;
-            case 1: // close door
-                pressElevatorButton(1);
-                break;
         }
     }
 
@@ -118,17 +112,8 @@ public class Floor implements Runnable {
     }
 
     private void board() {
-        try
-        {
-            socket.send(new DatagramPacket(new byte[]{0, 0}, 2,
-                        InetAddress.getLocalHost(), OUT_PORT));
-            System.out.println("Request to close doors sent.");
-        }
-        catch (IOException e)
-        {
-            socket.close();
-            throw new RuntimeException(e);
-        }
+        // get dest floor number from RequestData DS
+        pressElevatorButton(1);
     }
 
     private void waitRequest(){
@@ -142,19 +127,18 @@ public class Floor implements Runnable {
             throw new RuntimeException(e);
         }
     }
-    /**
-     * Default getter for port parameter.
-     * @return The current port value
-     */
-    public int getport() {
+
+
+    public int getPort() {
         return port;
     }
 
-    /**
-     * Default getter for the floor number.
-     * @return The floor number of this occurrence.
-     */
-    public int getfloorNum() {
+    public int getFloorNum() {
         return floorNum;
     }
+
+    public DatagramSocket getSocket() {
+        return socket;
+    }
+
 }

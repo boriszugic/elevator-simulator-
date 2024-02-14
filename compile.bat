@@ -1,0 +1,9 @@
+@echo off
+del src\Elevator.class
+del src\Floor.class
+del src\FloorSubsystem.class
+del src\Scheduler.class
+javac src\Elevator.java
+javac src\Floor.java
+javac src\FloorSubsystem.java
+javac src\Scheduler.java
