@@ -12,7 +12,6 @@ import java.util.concurrent.TimeUnit;
  *
  */
 public class Scheduler implements Runnable{
-
     private final int port = 64;
     DatagramSocket socket;
     List<FloorStructure> floors;
@@ -54,7 +53,6 @@ public class Scheduler implements Runnable{
         boolean isFloorInitDone = false, isElevatorInitDone = false;
 
         while (!isFloorInitDone || !isElevatorInitDone){
-
             DatagramPacket packet = Scheduler.getInstance().waitRequest();
             byte[] data = packet.getData();
 

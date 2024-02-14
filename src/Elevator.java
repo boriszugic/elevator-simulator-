@@ -8,8 +8,13 @@ import java.util.List;
 public class Elevator implements Runnable {
 
     private static final int MAX_NUM_OF_PASSENGERS = 10;
+<<<<<<< HEAD
     private static final int SCHEDULER_PORT = 64;
     private static int nextPortNum = 65;
+=======
+    private static final int SCHEDULER_PORT = 51;
+    private static int nextPortNum = 3100;
+>>>>>>> da79e512b9cdf6d5489795534a6ee88e4dd98489
     private static int nextId = 1;
     private final int id;
     private final int port;

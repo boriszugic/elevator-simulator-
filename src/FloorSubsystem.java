@@ -14,7 +14,6 @@ import java.util.LinkedList;
 import java.util.concurrent.TimeUnit;
 
 public class FloorSubsystem {
-
     static ArrayList<LinkedList<RequestData>> dataArray = new ArrayList<>();
     static ArrayList<Floor> floors = new ArrayList<>();
     public static void main(String[] args) {
@@ -83,23 +82,19 @@ public class FloorSubsystem {
             // end of initialization stage
             if (floor == null) {
                 new DatagramSocket().send(new DatagramPacket(new byte[]{0}, 1,
-                        InetAddress.getLocalHost(), 64));
+                                          InetAddress.getLocalHost(), 64));
             } else {
                 // Create and send DatagramPacket containing floor information
                 floor.getSocket().send(new DatagramPacket(new byte[]{
-                        (byte) floor.getFloorNum(),
-                        (byte) floor.getPort()},
-                        2, InetAddress.getLocalHost(), 64));
+                                       (byte) floor.getFloorNum(),
+                                       (byte) floor.getPort()},
+                                 2, InetAddress.getLocalHost(), 64));
             }
         } catch(IOException e){
             throw new RuntimeException(e);
         }
     }
 
-    /**
-     * Returns dataArray, a Linked List, consisting of all the requests obtained from the input file
-     * @return the dataArray
-     */
     public static ArrayList<LinkedList<RequestData>> getDataArray() {
         return dataArray;
     }

@@ -15,7 +15,6 @@ public class ConfigurationReader {
     public static void main(String[] args) {
         try {
             launchProcess("./compile.bat");
-
             TimeUnit.SECONDS.sleep(5);
 
             // Parse the configuration file
