@@ -22,6 +22,9 @@ information between threads. This is preparing for the multiple independant elev
 There is currently no print output for the system, as this is an early iteration
 intended to test the communication between subsystems.
 
+# Issues/Limitations
+1. Can run a maximum of 64 floors and 63 elevators.
+
 # Deliverables
   - Code necessary for program execution
     ButtonType.java, Door.java, Elevator.java, Door.java, ElevatorButton.java, ElevatorLamp.java,

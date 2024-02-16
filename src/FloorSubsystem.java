@@ -15,14 +15,8 @@ import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.concurrent.TimeUnit;
 
+@Getter
 public class FloorSubsystem {
-    /**
-     * -- GETTER --
-     *  Get the data array containing requests for all floors.
-     *
-     * @return ArrayList containing LinkedLists of RequestData
-     */
-    @Getter
     static ArrayList<LinkedList<RequestData>> dataArray = new ArrayList<>();
     static ArrayList<Floor> floors = new ArrayList<>();
 
