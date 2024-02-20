@@ -1,5 +1,7 @@
 package src;
 
+import lombok.Getter;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -13,9 +15,15 @@ import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.concurrent.TimeUnit;
 
+@Getter
 public class FloorSubsystem {
     static ArrayList<LinkedList<RequestData>> dataArray = new ArrayList<>();
     static ArrayList<Floor> floors = new ArrayList<>();
+
+    /**
+     * Main method to read input, initialize floors, and start threads.
+     * @param args Command line arguments: <input_file> <num_of_floors>
+     */
     public static void main(String[] args) {
         if (args.length < 1) {
             System.err.println("Usage: java FloorSubsystem <input_file> <num_of_floors>");
@@ -34,19 +42,7 @@ public class FloorSubsystem {
             while ((line = reader.readLine()) != null) {
                 String[] parts = line.split("\\s+");
                 if (parts.length == 4) {
-                    Calendar calendar = Calendar.getInstance();
-                    SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss.SSS");
-                    calendar.setTime(sdf.parse(parts[0]));
-
-                    Calendar currentDate = Calendar.getInstance();
-                    currentDate.set(Calendar.HOUR_OF_DAY, calendar.get(Calendar.HOUR_OF_DAY));
-                    currentDate.set(Calendar.MINUTE, calendar.get(Calendar.MINUTE));
-                    currentDate.set(Calendar.SECOND, calendar.get(Calendar.SECOND));
-
-                    int floorNum = Integer.parseInt(parts[1]);
-                    int destFloorNum = Integer.parseInt(parts[3]);
-                    dataArray.get(floorNum - 1).add(new RequestData(currentDate.getTime(), floorNum,
-                                  (parts[2].equals("Up")) ? Direction.UP : Direction.DOWN, destFloorNum));
+                    processInput(parts);
                 } else {
                     System.err.println("Invalid input format: " + line);
                 }
@@ -55,11 +51,11 @@ public class FloorSubsystem {
             // store info of each floor in scheduler
             for (int i = 0; i < Integer.parseInt(args[1]); i++){
                 Floor floor = new Floor();
-                sendFloorInformationToScheduler(floor);
+                saveFloorInScheduler(floor);
                 floors.add(floor);
             }
 
-            sendFloorInformationToScheduler(null);
+            saveFloorInScheduler(null);
 
             TimeUnit.SECONDS.sleep(3);
 
@@ -77,7 +73,32 @@ public class FloorSubsystem {
         }
     }
 
-    private static void sendFloorInformationToScheduler(Floor floor) {
+    /**
+     * Process input line and add request data to the data array.
+     * @param parts Input line split into parts
+     * @throws ParseException If input parsing fails
+     */
+    private static void processInput(String[] parts) throws ParseException {
+        Calendar calendar = Calendar.getInstance();
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss.SSS");
+        calendar.setTime(sdf.parse(parts[0]));
+
+        Calendar currentDate = Calendar.getInstance();
+        currentDate.set(Calendar.HOUR_OF_DAY, calendar.get(Calendar.HOUR_OF_DAY));
+        currentDate.set(Calendar.MINUTE, calendar.get(Calendar.MINUTE));
+        currentDate.set(Calendar.SECOND, calendar.get(Calendar.SECOND));
+
+        int floorNum = Integer.parseInt(parts[1]);
+        int destFloorNum = Integer.parseInt(parts[3]);
+        dataArray.get(floorNum - 1).add(new RequestData(currentDate.getTime(), floorNum,
+                (parts[2].equals("Up")) ? Direction.UP : Direction.DOWN, destFloorNum));
+    }
+
+    /**
+     * Save floor information in scheduler.
+     * @param floor Floor object containing floor information
+     */
+    private static void saveFloorInScheduler(Floor floor) {
         try {
             // end of initialization stage
             if (floor == null) {
@@ -95,11 +116,12 @@ public class FloorSubsystem {
         }
     }
 
-    public static ArrayList<LinkedList<RequestData>> getDataArray() {
-        return dataArray;
-    }
-
+    /**
+     * Get the requests for a specific floor.
+     * @param floorNum Floor number
+     * @return LinkedList containing requests for the specified floor
+     */
     public static LinkedList<RequestData> getRequests(int floorNum) {
-        return dataArray.get(floorNum);
+        return dataArray.get(floorNum - 1);
     }
 }

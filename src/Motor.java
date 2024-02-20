@@ -2,23 +2,36 @@ package src;
 
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Represents the motor of an elevator.
+ */
 public class Motor {
+    private Elevator elevator;
 
-    Elevator elevator;
-
-    public Motor(Elevator e){
+    /**
+     * Constructs a Motor object with the specified elevator.
+     *
+     * @param e The elevator associated with this motor
+     */
+    public Motor(Elevator e) {
         elevator = e;
     }
-    public void move(int floorNum) {
 
-        while(elevator.currentFloor != floorNum){
-            elevator.getDisplay().display(elevator.currentFloor);
+    /**
+     * Moves the elevator to the specified floor number.
+     *
+     * @param floorNum The target floor number
+     */
+    public void move(int floorNum) {
+        while (elevator.getCurrentFloor() != floorNum) {
+            elevator.getDisplay().display(elevator.getCurrentFloor());
             try {
                 TimeUnit.SECONDS.sleep(2);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
-            elevator.currentFloor += (floorNum - elevator.currentFloor > 0) ? 1 : -1;
+            elevator.setCurrentFloor(elevator.getCurrentFloor() +
+                    (floorNum - elevator.getCurrentFloor() > 0 ? 1 : -1));
         }
     }
 }

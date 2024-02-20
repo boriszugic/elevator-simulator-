@@ -1,54 +1,30 @@
 package src;
 
+import lombok.Getter;
 import java.util.Date;
 
+/**
+ * Represents data related to elevator requests.
+ */
+@Getter
 public class RequestData {
-    Direction move;
+    Direction direction;
     private int currentFloor;
     private Date time;
     private int requestFloor;
 
+    /**
+     * Constructs a RequestData object with the specified parameters.
+     *
+     * @param time          The time at which the request was made
+     * @param currentFloor  The current floor of the elevator
+     * @param direction     The direction in which the elevator is requested to move (Up or Down)
+     * @param requestFloor  The floor to which the elevator is requested to move
+     */
     public RequestData(Date time, int currentFloor, Direction direction, int requestFloor) {
         this.time = time;
         this.currentFloor = currentFloor;
-        this.move = direction;
+        this.direction = direction;
         this.requestFloor = requestFloor;
-    }
-
-    /**
-     * get the LocalDateTime value
-     * @return time
-     */
-    public Date getTime() {
-        return this.time;
-    }
-
-    /**
-     * get the int value
-     * representing floor number
-     * @return floorNum
-     */
-    public int getCurrentFloor() {
-        return this.currentFloor;
-    }
-
-    /**
-     * get the int value
-     * representing the floor number
-     * pressed
-     * @return floorButton
-     */
-    public int getRequestedFloor() {
-        return this.requestFloor;
-    }
-
-    /**
-     * get the Direction value
-     * representing the state of the
-     * elevator (UP/DOWN) button
-     * @return button
-     */
-    public Direction getDirection() {
-        return this.move;
     }
 }

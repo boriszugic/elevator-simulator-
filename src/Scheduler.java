@@ -1,22 +1,29 @@
 package src;
 
+import lombok.Getter;
+
 import java.io.IOException;
 import java.net.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-
-/** Singleton class
- *
+/**
+ * Singleton class representing the Scheduler.
  */
 public class Scheduler implements Runnable{
+    @Getter
     private final int port = 64;
-    DatagramSocket socket;
-    List<FloorStructure> floors;
-    List<ElevatorStructure> elevators;
+    @Getter
+    private final DatagramSocket socket;
+    @Getter
+    private List<FloorStructure> floors;
+    @Getter
+    private List<ElevatorStructure> elevators;
 
+    /**
+     * Private constructor to prevent instantiation from outside the class.
+     */
     private Scheduler() {
         try {
             this.socket = new DatagramSocket(port);
@@ -27,17 +34,13 @@ public class Scheduler implements Runnable{
         }
     }
 
+    /** Singleton instance */
     private static final Scheduler instance = new Scheduler();
 
     public static void main(String[] args){
         Scheduler scheduler = Scheduler.getInstance();
         initializeFloorsAndElevators();
-        for (FloorStructure floor : scheduler.getFloors()){
-            System.out.println(floor.toString());
-        }
-        for (ElevatorStructure elevator : scheduler.getElevators()){
-            System.out.println(elevator.toString());
-        }
+        printFloorAndElevatorInfo(scheduler);
         /*
         try {
             TimeUnit.SECONDS.sleep(3);
@@ -48,6 +51,9 @@ public class Scheduler implements Runnable{
         */
     }
 
+    /**
+     * Initializes floors and elevators
+     */
     private static void initializeFloorsAndElevators() {
 
         boolean isFloorInitDone = false, isElevatorInitDone = false;
@@ -86,14 +92,27 @@ public class Scheduler implements Runnable{
         }
     }
 
+    /** Prints floor and elevator information */
+    private static void printFloorAndElevatorInfo(Scheduler scheduler) {
+        for (FloorStructure floor : scheduler.getFloors()) {
+            System.out.println(floor.toString());
+        }
+        for (ElevatorStructure elevator : scheduler.getElevators()) {
+            System.out.println(elevator.toString());
+        }
+    }
+
+    /** Adds an elevator to the scheduler */
     public void addElevator(ElevatorStructure elevator) {
         elevators.add(elevator);
     }
 
+    /** Adds a floor to the scheduler */
     public void addFloor(FloorStructure floor) {
         floors.add(floor);
     }
 
+    /** Returns the singleton instance of the Scheduler */
     private static Scheduler getInstance() {
         return instance;
     }
@@ -125,7 +144,8 @@ public class Scheduler implements Runnable{
         byte[] data = packet.getData();
         // error checking
         if (isValid(data)){
-            ElevatorStructure elevator = chooseElevator(data[0], data[1]);
+            ElevatorStructure elevator = chooseElevator((data[0] == 0 ? Direction.DOWN : Direction.UP),
+                                                        data[1]);
             return createPacket(data[1], elevator.getPort());
         }
         throw new RuntimeException("Invalid request.");
@@ -143,34 +163,37 @@ public class Scheduler implements Runnable{
     }
 
     /**
+     * Chooses an elevator to handle the request based on direction and floor number.
      *
-     * @param direction
-     * @param floorNum
-     * @return chosenElevator
+     * @param direction The direction of the request
+     * @param floorNum  The floor number of the request
+     * @return The chosen elevator
      */
-    private ElevatorStructure chooseElevator(int direction, int floorNum){
-       return elevators.get(0);
+    private ElevatorStructure chooseElevator(Direction direction, int floorNum){
+        return elevators.getFirst();
     }
 
-    /** Create packet with scheduler-needed information
-     * Format:
-     * first byte : floor number
-     * second byte : direction
+    /**
+     * Creates a DatagramPacket with the necessary information for the scheduler.
+     * The packet contains the floor number and direction.
+     *
+     * @param floorNum  The floor number
+     * @param direction The direction of the request (0 for down, 1 for up)
+     * @return The created DatagramPacket
      */
     private DatagramPacket createPacket(int floorNum, int direction){
-        try
-        {
+        try {
             return new DatagramPacket(new byte[]{(byte) floorNum, (byte) direction}, 2,
                                       InetAddress.getLocalHost(), port);
-        }
-        catch (UnknownHostException e)
-        {
+        } catch (UnknownHostException e) {
             throw new RuntimeException(e);
         }
     }
 
-    /** Send packet
+    /**
+     * Sends a request packet to the chosen elevator.
      *
+     * @param packet The packet to be sent
      */
     private void sendRequest(DatagramPacket packet){
         try {
@@ -178,21 +201,5 @@ public class Scheduler implements Runnable{
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public int getPort() {
-        return port;
-    }
-
-    public DatagramSocket getSocket() {
-        return socket;
-    }
-
-    public List<FloorStructure> getFloors() {
-        return floors;
-    }
-
-    public List<ElevatorStructure> getElevators() {
-        return elevators;
     }
 }
