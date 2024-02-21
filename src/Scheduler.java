@@ -142,11 +142,16 @@ public class Scheduler implements Runnable{
      */
     private DatagramPacket parseRequest(DatagramPacket packet){
         byte[] data = packet.getData();
+        if (packet.getLength() == 1){
+            //Elevator packet
+            return createFloorPacket(data);
+        }
+        // parse elevator packet
         // error checking
-        if (isValid(data)){
+        else if (isValid(data)){
             ElevatorStructure elevator = chooseElevator((data[0] == 0 ? Direction.DOWN : Direction.UP),
                                                         data[1]);
-            return createPacket(data[1], elevator.getPort());
+            return createElevatorPacket(data[1], elevator.getPort());
         }
         throw new RuntimeException("Invalid request.");
     }
@@ -175,13 +180,14 @@ public class Scheduler implements Runnable{
 
     /**
      * Creates a DatagramPacket with the necessary information for the scheduler.
+     * Formatted to be sent to Elevator subsystem
      * The packet contains the floor number and direction.
      *
      * @param floorNum  The floor number
      * @param direction The direction of the request (0 for down, 1 for up)
      * @return The created DatagramPacket
      */
-    private DatagramPacket createPacket(int floorNum, int direction){
+    private DatagramPacket createElevatorPacket(int floorNum, int direction){
         try {
             return new DatagramPacket(new byte[]{(byte) floorNum, (byte) direction}, 2,
                                       InetAddress.getLocalHost(), port);
@@ -189,7 +195,22 @@ public class Scheduler implements Runnable{
             throw new RuntimeException(e);
         }
     }
-
+    /**
+     * Creates a DatagramPacket with the necessary information for the scheduler.
+     * Formatted to be sent to Floor subsystem
+     * The packet contains the Elevator UPDATETYPE.
+     *
+     * @param data  The byte array of data received from Elevator
+     * @return The created DatagramPacket
+     */
+    private DatagramPacket createFloorPacket(byte[] data){
+        try {
+            return new DatagramPacket(data, 1,
+                    InetAddress.getLocalHost(), port);
+        } catch (UnknownHostException e) {
+            throw new RuntimeException(e);
+        }
+    }
     /**
      * Sends a request packet to the chosen elevator.
      *
