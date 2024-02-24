@@ -144,37 +144,41 @@ public class Scheduler implements Runnable{
      */
     private DatagramPacket parseRequest(DatagramPacket packet){
         byte[] data = packet.getData();
-        if (packet.getLength() == 1){ //Elevator packet response
-            // Process the received datagram.
-            byte[] updateData = new byte[]{packet.getData()[0]};
-            System.out.println("Scheduler: Packet received from Elevator:");
-            System.out.println("From host: " + packet.getAddress());
-            System.out.println("Host port: " + packet.getPort()+"\n");
-            return createFloorPacket(updateData);
+        System.out.println("Packet length: "+packet.getLength());
+        System.out.println("Packet data length: "+packet.getData().length);
+        if (packet.getLength() == 3){ //Elevator packet response
+            if (isValid(data)){ //Elevator packet request to retrieve elevator
+                System.out.println("elseif");
+                // Process the received datagram.
+                printPacketInfo(packet,"Floor");
+                ElevatorStructure elevator = chooseElevator((data[0] == 0 ? Direction.DOWN : Direction.UP),
+                        data[1]);
+                return createElevatorPacket(data[1], elevator.getPort());
+            }
         }
         if (packet.getLength() == 2) {
-            // Process the received datagram.
-            int floorNum = packet.getData()[0];
-            System.out.println("Scheduler: Packet received from Floor:");
-            System.out.println("From host: " + packet.getAddress());
-            System.out.println("Host port: " + packet.getPort()+"\n");
-
-            return createElevatorPacket(floorNum, 65);
+            if(packet.getData()[1] == 0){
+                //Elevator packet request when boarded
+                System.out.println("if packet.getLength() == 2");
+                // Process the received datagram.
+                printPacketInfo(packet,"Floor");
+                int floorNum = packet.getData()[0];
+                if(floorNum <= floors.size()){return createElevatorPacket(floorNum, 65);}
+            }else{
+                System.out.println("if packet.getLength() == 4");
+                // Process the received datagram.
+                byte[] updateData = new byte[]{packet.getData()[0]};
+                int port = packet.getData()[1];
+                printPacketInfo(packet,"Elevator");
+                return createFloorPacket(updateData,port);
+            }
         }
         // error checking
-        else if (isValid(data)){ //Elevator packet request
-            // Process the received datagram.
-            System.out.println("Scheduler: Packet received from Floor:");
-            System.out.println("From host: " + packet.getAddress());
-            System.out.println("Host port: " + packet.getPort()+"\n");
-            ElevatorStructure elevator = chooseElevator((data[0] == 0 ? Direction.DOWN : Direction.UP),
-                                                        data[1]);
-            return createElevatorPacket(data[1], elevator.getPort());
-        }
         throw new RuntimeException("Invalid request.");
     }
 
     private boolean isValid(byte[] data) {
+
         if (data.length != 3) {
             return false;
         }
@@ -221,10 +225,10 @@ public class Scheduler implements Runnable{
      * @param data  The byte array of data received from Elevator
      * @return The created DatagramPacket
      */
-    private DatagramPacket createFloorPacket(byte[] data){
+    private DatagramPacket createFloorPacket(byte[] data,int port){
         try {
             return new DatagramPacket(data, 1,
-                    InetAddress.getLocalHost(), floors.getFirst().getPort());
+                    InetAddress.getLocalHost(), port);
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);
         }
@@ -240,7 +244,7 @@ public class Scheduler implements Runnable{
             System.out.println("Scheduler: Sending packet:");
             System.out.println("To host: "+ packet.getAddress());
             System.out.println("Destination host port: "+packet.getPort());
-            int len = packet.getLength();
+            int len = packet.getData().length;
             System.out.println("Length: "+len);
             System.out.print("Containing: ");
             System.out.println(new String(packet.getData(),0,len)+"\n");
@@ -249,4 +253,12 @@ public class Scheduler implements Runnable{
             throw new RuntimeException(e);
         }
     }
+
+    private void printPacketInfo(DatagramPacket packet, String sender) {
+        System.out.println("Scheduler: Packet received from "+sender+": ");
+        System.out.println("From host: " + packet.getAddress());
+        System.out.println("Host port: " + packet.getPort()+"\n");
+        System.out.println("Data: "+ Arrays.toString(packet.getData()));
+    }
+
 }

@@ -24,8 +24,6 @@ public class Elevator implements Runnable {
     @Getter
     private final int port;
     @Getter
-    private int floorPort;
-    @Getter
     private DatagramSocket socket;
     @Getter
     private Motor motor;
@@ -63,7 +61,7 @@ public class Elevator implements Runnable {
         motor = new Motor(this);
         door = new Door();
         display = new Display();
-        currentFloor = 0;
+        currentFloor = 1;
         destinationFloor = 0;
         numOfPassengers = 0;
         state = ElevatorState.IDLE;
@@ -183,7 +181,10 @@ public class Elevator implements Runnable {
             System.out.println("Elevator: Sending packet:");
             System.out.println("To host: "+ InetAddress.getLocalHost());
             System.out.println("Destination host port: "+SCHEDULER_PORT);
-            return new DatagramPacket(new byte[]{(byte) updateType.ordinal()}, 1,
+            byte [] data = new byte[2];
+            data[0] = (byte) updateType.ordinal();
+            data[1] = (byte) currentFloor;
+            return new DatagramPacket(data, data.length,
                     InetAddress.getLocalHost(), SCHEDULER_PORT);
             //Information prints
 

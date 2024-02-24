@@ -49,11 +49,12 @@ public class Floor implements Runnable {
             RequestData request = requests.poll();
             this.destFloor = request.getRequestFloor();
             System.out.println("requestFloor: "+request.getRequestFloor());
-//            while(request.getTime().compareTo(currentTime.getTime()) != 0){
-//                //System.out.println("Inside time loop");
-//                //System.out.println(request.getTime().toString() + " : " + currentTime.getTime().toString());
-//                currentTime = Calendar.getInstance();
-//            }
+            while(request.getTime().compareTo(currentTime.getTime()) != 0){
+                printRequest(request);
+                //System.out.println("Inside time loop");
+                //System.out.println(request.getTime().toString() + " : " + currentTime.getTime().toString());
+                currentTime = Calendar.getInstance();
+            }
             //System.out.println("Will this request send");
             sendRequest(request.getDirection(), this.floorNum, port);
             waitRequest();
@@ -71,10 +72,6 @@ public class Floor implements Runnable {
     private void sendRequest(Direction buttonType, int floorNum, int port) {
         DatagramPacket packet = createPacket(buttonType, floorNum, port);
         try {
-            System.out.println("Sending request to Scheduler with");
-            System.out.println("buttonType: "+buttonType);
-            System.out.println("floorNum: "+floorNum);
-            System.out.println("port: "+port);
             socket.send(packet);
 
         } catch (IOException e) {
@@ -116,6 +113,7 @@ public class Floor implements Runnable {
         data[0] = (byte) floorNum;
         try {
             //System.out.println("floorNum: "+floorNum);
+
             return new DatagramPacket(data, data.length, InetAddress.getLocalHost(), SCHEDULER_PORT);
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);
@@ -198,4 +196,12 @@ public class Floor implements Runnable {
 //            System.out.println("Packet length: "+receivedPacket.getLength());
         parseRequest(receivePacket);
     }
+
+    public void printRequest(RequestData request) {
+        System.out.println("Sending request to Scheduler with");
+        System.out.println("buttonType: "+request.direction);
+        System.out.println("floorNum: "+floorNum);
+        System.out.println("port: "+port);
+    }
+
 }
