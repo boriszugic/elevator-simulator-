@@ -120,6 +120,7 @@ public class Floor implements Runnable {
         switch (packet.getData()[0]) {
             case 0: // open door
                 board();
+
                 break;
         }
     }

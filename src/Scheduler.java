@@ -56,6 +56,7 @@ public class Scheduler implements Runnable{
      * Initializes floors and elevators
      */
     private static void initializeFloorsAndElevators() {
+        ElevatorStateMachine elevatorStateMachine = new ElevatorStateMachine();
 
         boolean isFloorInitDone = false, isElevatorInitDone = false;
 
@@ -82,7 +83,7 @@ public class Scheduler implements Runnable{
                 // elevator init
                 case 3:
                     Scheduler.getInstance().getElevators().add(new ElevatorStructure(
-                                                               data[0], ElevatorState.IDLE,
+                                                               data[0], elevatorStateMachine, // initialized
                                                                data[1], data[2]));
                     System.out.println("---- ADDED ELEVATOR ----");
                     break;
@@ -194,7 +195,7 @@ public class Scheduler implements Runnable{
      * @return The chosen elevator
      */
     private ElevatorStructure chooseElevator(Direction direction, int floorNum){
-        return elevators.getFirst();
+        return elevators.get(0);
     }
 
     /**

@@ -46,7 +46,7 @@ public class Elevator implements Runnable {
     @Getter
     private int numOfPassengers;
     @Getter
-    private ElevatorState state;
+    private ElevatorStateMachine state = new ElevatorStateMachine();
 
     static synchronized int getNextPortNum() {
         return nextPortNum++;
@@ -65,7 +65,7 @@ public class Elevator implements Runnable {
         currentFloor = 1;
         destinationFloor = 0;
         numOfPassengers = 0;
-        state = ElevatorState.IDLE;
+        state.setState("IdleState"); //elevator initialized to idle.
 
         try {
             this.socket = new DatagramSocket(port);
@@ -139,6 +139,7 @@ public class Elevator implements Runnable {
     private void parseRequest(DatagramPacket packet){
         // Process the received datagram.
         printPacketReceived(packet);
+        state.requestReceived();
         int floorNum = packet.getData()[0];
         move(floorNum);
     }
