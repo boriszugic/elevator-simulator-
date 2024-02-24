@@ -60,9 +60,9 @@ public class FloorSubsystem {
             TimeUnit.SECONDS.sleep(3);
 
             // start floor threads
-            //for (Floor floor : floors){
-                //new Thread(floor).start();
-            //}
+            for (Floor floor : floors){
+                new Thread(floor).start();
+            }
 
             reader.close();
         } catch (IOException e) {

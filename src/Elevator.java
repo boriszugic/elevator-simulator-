@@ -6,6 +6,7 @@ import lombok.Setter;
 import java.io.IOException;
 import java.net.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Elevator implements Runnable {
@@ -23,8 +24,6 @@ public class Elevator implements Runnable {
     private final int id;
     @Getter
     private final int port;
-    @Getter
-    private int floorPort;
     @Getter
     private DatagramSocket socket;
     @Getter
@@ -63,7 +62,7 @@ public class Elevator implements Runnable {
         motor = new Motor(this);
         door = new Door();
         display = new Display();
-        currentFloor = 0;
+        currentFloor = 1;
         destinationFloor = 0;
         numOfPassengers = 0;
         state = ElevatorState.IDLE;
@@ -88,7 +87,7 @@ public class Elevator implements Runnable {
         for (int i = 0; i < Integer.parseInt(args[0]); i++){
             Elevator elevator = new Elevator(Integer.parseInt(args[1]));
             saveElevatorInScheduler(elevator);
-            //new Thread(elevator).start();
+            new Thread(elevator).start();
         }
         saveElevatorInScheduler(null);
     }
@@ -138,6 +137,8 @@ public class Elevator implements Runnable {
      * Parses received data and updates attributes accordingly
      */
     private void parseRequest(DatagramPacket packet){
+        // Process the received datagram.
+        printPacketReceived(packet);
         int floorNum = packet.getData()[0];
         move(floorNum);
     }
@@ -148,6 +149,7 @@ public class Elevator implements Runnable {
      * @param floorNum floor number to move to
      */
     public void move(int floorNum){
+        System.out.println("Moving to floor: "+floorNum+" from currentFloor: "+currentFloor);
         motor.move(floorNum);
         door.open();
         display.display(currentFloor);
@@ -168,15 +170,21 @@ public class Elevator implements Runnable {
 
     /**
      * Creates a DatagramPacket for sending updates to the Scheduler.
-     * The packet contains the ordinal value of the provided update type.
-     *
+     * Packet Format:
+     * first byte  : updateType ordinal number (Direction 1 = UP : 0 = DOWN)
+     * second byte : currentFloor
      * @param updateType The type of update to include in the packet
      * @return The DatagramPacket to be sent
      */
     public DatagramPacket createPacket(UpdateType updateType) {
         try {
-            return new DatagramPacket(new byte[]{(byte) updateType.ordinal()}, 1,
+            printPacketRequest(updateType);
+            byte [] data = new byte[2];
+            data[0] = (byte) updateType.ordinal();
+            data[1] = (byte) currentFloor;
+            return new DatagramPacket(data, data.length,
                     InetAddress.getLocalHost(), SCHEDULER_PORT);
+
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);
         }
@@ -189,5 +197,25 @@ public class Elevator implements Runnable {
      */
     private boolean isOverloaded() {
         return numOfPassengers > MAX_NUM_OF_PASSENGERS;
+    }
+    /**
+     * Prints necessary information from the received packet.
+     *
+     * @param packet  The byte array of data received from Elevator
+     */
+    private void printPacketReceived(DatagramPacket packet){
+        System.out.println("Elevator: Packet received from Scheduler:");
+        System.out.println("From host port: " + packet.getPort());
+        System.out.println("Containing: "+ Arrays.toString(packet.getData())+"\n");
+    }
+    /**
+     * Prints necessary information from the received packet.
+     *
+     * @param updateType  The elevator updateType
+     */
+    private void printPacketRequest(UpdateType updateType){
+        System.out.println("Elevator: Sending packet:");
+        System.out.println("Destination host port: "+SCHEDULER_PORT);
+        System.out.println("Elevator status: "+updateType+"\n");
     }
 }

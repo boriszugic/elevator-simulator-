@@ -5,6 +5,7 @@ import lombok.Getter;
 import java.io.IOException;
 import java.net.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -41,14 +42,14 @@ public class Scheduler implements Runnable{
         Scheduler scheduler = Scheduler.getInstance();
         initializeFloorsAndElevators();
         printFloorAndElevatorInfo(scheduler);
-        /*
+
         try {
             TimeUnit.SECONDS.sleep(3);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
         new Thread(scheduler).start();
-        */
+
     }
 
     /**
@@ -123,12 +124,13 @@ public class Scheduler implements Runnable{
             sendRequest(parseRequest(waitRequest()));
         }
     }
-
+    /**
+     * Waits for a request from Floor and Elevator threads.
+     */
     private DatagramPacket waitRequest() {
         DatagramPacket receivedPacket = new DatagramPacket(new byte[3], 3);
         try {
             socket.receive(receivedPacket);
-            System.out.println("Request received.");
             return receivedPacket;
         } catch (IOException e) {
             socket.close();
@@ -138,28 +140,50 @@ public class Scheduler implements Runnable{
 
     /** Parse the request from floor
      *
-     * @param packet
+     * @param packet The DatagramPacket to be parsed
+     * @return The appropriate DatagramPacket to be sent
      */
     private DatagramPacket parseRequest(DatagramPacket packet){
         byte[] data = packet.getData();
-        // error checking
-        if (isValid(data)){
-            ElevatorStructure elevator = chooseElevator((data[0] == 0 ? Direction.DOWN : Direction.UP),
-                                                        data[1]);
-            return createPacket(data[1], elevator.getPort());
-        }
-        throw new RuntimeException("Invalid request.");
-    }
+        ElevatorStructure elevator = chooseElevator((data[0] == 0 ? Direction.DOWN : Direction.UP), data[1]);
 
+        if (packet.getLength() == 3 && isValid(data)){ //Elevator packet request to retrieve elevator
+            printPacketReceived(packet,"Floor");
+            return createElevatorPacket(data[1], elevator.getPort());
+        }
+        else if (packet.getLength() == 2) {
+            if(packet.getData()[1] == 0){ //Floor request from when passenger is has boarded elevator
+                printPacketReceived(packet,"Floor");
+                int floorNum = packet.getData()[0];
+                if(floorNum <= floors.size()){return createElevatorPacket(floorNum, elevator.getPort());}
+            }
+            else{ //Elevator Response Packet
+                byte[] updateData = new byte[]{packet.getData()[0]};
+                int port = packet.getData()[1];
+                printPacketReceived(packet,"Elevator");
+                return createFloorPacket(updateData,port);
+            }
+        }
+        // error checking
+        throw new RuntimeException("Invalid request (Improper format).");
+    }
+    /**
+     * Validates formatted data for elevator requests
+     *
+     * @param data
+     * @return false if any of the conditions are triggered, true otherwise
+     */
     private boolean isValid(byte[] data) {
-        if (data.length != 3) {
+
+        if (data.length != 3) { //Checks for sufficient length of data
             return false;
         }
-        if (!(data[0] == 0 || data[0] == 1)){
+        if (!(data[0] == 0 || data[0] == 1)){ //Checks byte 0 for Direction UP or DOWN
+            System.out.println("False");
             return false;
         }
         int floorNum = data[1];
-        return floorNum >= 0 && floorNum <= floors.size();
+        return floorNum >= 0 && floorNum <= floors.size(); // Checks if floorNum is valid
     }
 
     /**
@@ -175,21 +199,36 @@ public class Scheduler implements Runnable{
 
     /**
      * Creates a DatagramPacket with the necessary information for the scheduler.
+     * Formatted to be sent to Elevator subsystem
      * The packet contains the floor number and direction.
      *
      * @param floorNum  The floor number
-     * @param direction The direction of the request (0 for down, 1 for up)
      * @return The created DatagramPacket
      */
-    private DatagramPacket createPacket(int floorNum, int direction){
+    private DatagramPacket createElevatorPacket(int floorNum, int port){
         try {
-            return new DatagramPacket(new byte[]{(byte) floorNum, (byte) direction}, 2,
+            return new DatagramPacket(new byte[]{(byte) floorNum}, 1,
                                       InetAddress.getLocalHost(), port);
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);
         }
     }
-
+    /**
+     * Creates a DatagramPacket with the necessary information for the scheduler.
+     * Formatted to be sent to Floor subsystem
+     * The packet contains the Elevator UPDATETYPE.
+     *
+     * @param data  The byte array of data received from Elevator
+     * @return The created DatagramPacket
+     */
+    private DatagramPacket createFloorPacket(byte[] data,int port){
+        try {
+            return new DatagramPacket(data, 1,
+                    InetAddress.getLocalHost(), port);
+        } catch (UnknownHostException e) {
+            throw new RuntimeException(e);
+        }
+    }
     /**
      * Sends a request packet to the chosen elevator.
      *
@@ -197,9 +236,33 @@ public class Scheduler implements Runnable{
      */
     private void sendRequest(DatagramPacket packet){
         try {
+            printPacketRequest(packet);
             socket.send(packet);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
+    /**
+     * Prints necessary information from the received packet.
+     *
+     * @param packet  The byte array of data received from Elevator
+     * @param sender String name of the receiver
+     */
+    private void printPacketReceived(DatagramPacket packet, String sender) {
+        System.out.println("Scheduler: Packet received from "+sender+": ");
+        System.out.println("From host port: " + packet.getPort());
+        System.out.println("Containing: "+ Arrays.toString(packet.getData())+"\n");
+    }
+    /**
+     * Prints necessary information from the packet request.
+     *
+     * @param packet  The byte array of data to be printed
+     */
+    private void printPacketRequest(DatagramPacket packet) {
+        //Information prints
+        System.out.println("Scheduler: Sending packet:");
+        System.out.println("Destination host port: "+packet.getPort());
+        System.out.println("Containing: "+ Arrays.toString(packet.getData())+"\n");
+    }
+
 }
