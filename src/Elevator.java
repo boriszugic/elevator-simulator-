@@ -88,7 +88,7 @@ public class Elevator implements Runnable {
         for (int i = 0; i < Integer.parseInt(args[0]); i++){
             Elevator elevator = new Elevator(Integer.parseInt(args[1]));
             saveElevatorInScheduler(elevator);
-            //new Thread(elevator).start();
+            new Thread(elevator).start();
         }
         saveElevatorInScheduler(null);
     }
@@ -138,7 +138,12 @@ public class Elevator implements Runnable {
      * Parses received data and updates attributes accordingly
      */
     private void parseRequest(DatagramPacket packet){
+        // Process the received datagram.
+        System.out.println("Elevator: Packet received from Scheduler:");
+        System.out.println("From host: " + packet.getAddress());
+        System.out.println("Host port: " + packet.getPort());
         int floorNum = packet.getData()[0];
+        System.out.println("Moving to floor: "+floorNum+" from currentFloor: "+currentFloor);
         move(floorNum);
     }
 
@@ -175,8 +180,13 @@ public class Elevator implements Runnable {
      */
     public DatagramPacket createPacket(UpdateType updateType) {
         try {
+            System.out.println("Elevator: Sending packet:");
+            System.out.println("To host: "+ InetAddress.getLocalHost());
+            System.out.println("Destination host port: "+SCHEDULER_PORT);
             return new DatagramPacket(new byte[]{(byte) updateType.ordinal()}, 1,
                     InetAddress.getLocalHost(), SCHEDULER_PORT);
+            //Information prints
+
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);
         }

@@ -5,6 +5,7 @@ import lombok.Getter;
 import java.io.IOException;
 import java.net.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -41,14 +42,15 @@ public class Scheduler implements Runnable{
         Scheduler scheduler = Scheduler.getInstance();
         initializeFloorsAndElevators();
         printFloorAndElevatorInfo(scheduler);
-        /*
+        //scheduler.run();
+
         try {
             TimeUnit.SECONDS.sleep(3);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
         new Thread(scheduler).start();
-        */
+
     }
 
     /**
@@ -128,7 +130,7 @@ public class Scheduler implements Runnable{
         DatagramPacket receivedPacket = new DatagramPacket(new byte[3], 3);
         try {
             socket.receive(receivedPacket);
-            System.out.println("Request received.");
+            //System.out.println("Request received.");
             return receivedPacket;
         } catch (IOException e) {
             socket.close();
@@ -138,17 +140,33 @@ public class Scheduler implements Runnable{
 
     /** Parse the request from floor
      *
-     * @param packet
+     * @param packet The packet to be parsed
      */
     private DatagramPacket parseRequest(DatagramPacket packet){
         byte[] data = packet.getData();
-        if (packet.getLength() == 1){
-            //Elevator packet
-            return createFloorPacket(data);
+        if (packet.getLength() == 1){ //Elevator packet response
+            // Process the received datagram.
+            byte[] updateData = new byte[]{packet.getData()[0]};
+            System.out.println("Scheduler: Packet received from Elevator:");
+            System.out.println("From host: " + packet.getAddress());
+            System.out.println("Host port: " + packet.getPort()+"\n");
+            return createFloorPacket(updateData);
         }
-        // parse elevator packet
+        if (packet.getLength() == 2) {
+            // Process the received datagram.
+            int floorNum = packet.getData()[0];
+            System.out.println("Scheduler: Packet received from Floor:");
+            System.out.println("From host: " + packet.getAddress());
+            System.out.println("Host port: " + packet.getPort()+"\n");
+
+            return createElevatorPacket(floorNum, 65);
+        }
         // error checking
-        else if (isValid(data)){
+        else if (isValid(data)){ //Elevator packet request
+            // Process the received datagram.
+            System.out.println("Scheduler: Packet received from Floor:");
+            System.out.println("From host: " + packet.getAddress());
+            System.out.println("Host port: " + packet.getPort()+"\n");
             ElevatorStructure elevator = chooseElevator((data[0] == 0 ? Direction.DOWN : Direction.UP),
                                                         data[1]);
             return createElevatorPacket(data[1], elevator.getPort());
@@ -161,6 +179,7 @@ public class Scheduler implements Runnable{
             return false;
         }
         if (!(data[0] == 0 || data[0] == 1)){
+            System.out.println("False");
             return false;
         }
         int floorNum = data[1];
@@ -184,12 +203,11 @@ public class Scheduler implements Runnable{
      * The packet contains the floor number and direction.
      *
      * @param floorNum  The floor number
-     * @param direction The direction of the request (0 for down, 1 for up)
      * @return The created DatagramPacket
      */
-    private DatagramPacket createElevatorPacket(int floorNum, int direction){
+    private DatagramPacket createElevatorPacket(int floorNum, int port){
         try {
-            return new DatagramPacket(new byte[]{(byte) floorNum, (byte) direction}, 2,
+            return new DatagramPacket(new byte[]{(byte) floorNum}, 1,
                                       InetAddress.getLocalHost(), port);
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);
@@ -206,7 +224,7 @@ public class Scheduler implements Runnable{
     private DatagramPacket createFloorPacket(byte[] data){
         try {
             return new DatagramPacket(data, 1,
-                    InetAddress.getLocalHost(), port);
+                    InetAddress.getLocalHost(), floors.getFirst().getPort());
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);
         }
@@ -218,6 +236,14 @@ public class Scheduler implements Runnable{
      */
     private void sendRequest(DatagramPacket packet){
         try {
+            //Information prints
+            System.out.println("Scheduler: Sending packet:");
+            System.out.println("To host: "+ packet.getAddress());
+            System.out.println("Destination host port: "+packet.getPort());
+            int len = packet.getLength();
+            System.out.println("Length: "+len);
+            System.out.print("Containing: ");
+            System.out.println(new String(packet.getData(),0,len)+"\n");
             socket.send(packet);
         } catch (IOException e) {
             throw new RuntimeException(e);

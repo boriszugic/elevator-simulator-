@@ -17,9 +17,9 @@ public class RequestData {
      * Constructs a RequestData object with the specified parameters.
      *
      * @param time          The time at which the request was made
-     * @param currentFloor  The current floor of the elevator
+     * @param currentFloor  The current floor of the request being made
      * @param direction     The direction in which the elevator is requested to move (Up or Down)
-     * @param requestFloor  The floor to which the elevator is requested to move
+     * @param requestFloor  The destination floor
      */
     public RequestData(Date time, int currentFloor, Direction direction, int requestFloor) {
         this.time = time;
