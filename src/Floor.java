@@ -45,20 +45,14 @@ public class Floor implements Runnable {
 
         Calendar currentTime = Calendar.getInstance();
         while (!requests.isEmpty()) {
-            System.out.println("Requests size before: "+requests.size());
             RequestData request = requests.poll();
             this.destFloor = request.getRequestFloor();
-            System.out.println("requestFloor: "+request.getRequestFloor());
             while(request.getTime().compareTo(currentTime.getTime()) != 0){
-                printRequest(request);
-                //System.out.println("Inside time loop");
-                //System.out.println(request.getTime().toString() + " : " + currentTime.getTime().toString());
                 currentTime = Calendar.getInstance();
             }
-            //System.out.println("Will this request send");
+            printRequestInfo(request);
             sendRequest(request.getDirection(), this.floorNum, port);
             waitRequest();
-            System.out.println("Requests size after: "+requests.size());
         }
     }
 
@@ -73,7 +67,6 @@ public class Floor implements Runnable {
         DatagramPacket packet = createPacket(buttonType, floorNum, port);
         try {
             socket.send(packet);
-
         } catch (IOException e) {
             socket.close();
             throw new RuntimeException(e);
@@ -96,7 +89,6 @@ public class Floor implements Runnable {
         data[1] = (byte) floorNum;
         data[2] = (byte) port;
         try {
-            //System.out.println("floorNum: "+floorNum);
             return new DatagramPacket(data, data.length, InetAddress.getLocalHost(), SCHEDULER_PORT);
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);
@@ -112,8 +104,6 @@ public class Floor implements Runnable {
         byte[] data = new byte[2];
         data[0] = (byte) floorNum;
         try {
-            //System.out.println("floorNum: "+floorNum);
-
             return new DatagramPacket(data, data.length, InetAddress.getLocalHost(), SCHEDULER_PORT);
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);
@@ -141,23 +131,14 @@ public class Floor implements Runnable {
      */
     private void pressElevatorButton(int floorNum) {
         // sends request
-        System.out.println("Sending request for elevator button pressed on floor #: "+floorNum);
+        System.out.println("Requesting elevator to move to floor number: "+floorNum);
         DatagramPacket packet = createPacket(floorNum);
         try {
-            System.out.println("Sending request to Scheduler with");
-            System.out.println("floorNum: "+floorNum);
             socket.send(packet);
-
         } catch (IOException e) {
             socket.close();
             throw new RuntimeException(e);
         }
-        //RequestData floorRequest = FloorSubsystem.getRequests(floorNum);
-        // RequestData request = floorRequest.peek();
-        //System.out.println("RequestFloor: "+request.getRequestFloor());
-        //sendRequest(request.getDirection(), request.getRequestFloor(), port);
-
-
     }
 
     /**
@@ -165,7 +146,6 @@ public class Floor implements Runnable {
      */
     private void board() {
         // get dest floor number from RequestData DS
-
         pressElevatorButton(this.destFloor);
     }
 
@@ -174,10 +154,9 @@ public class Floor implements Runnable {
      */
     private void waitRequest(){
         byte[] data = new byte[1];
-        System.out.println("waiting on port #: "+port);
         receivePacket = new DatagramPacket(data, 1);
         try {
-            System.out.println("Blocking until packet received...");
+            System.out.println("Waiting until packet received...");
             // Block until a datagram is received via sendReceiveSocket.
             socket.receive(receivePacket);
         } catch (IOException e) {
@@ -187,21 +166,19 @@ public class Floor implements Runnable {
 
         // Process the received datagram.
         System.out.println("Floor: Packet received:");
-        System.out.println("From host: " + receivePacket.getAddress());
-        System.out.println("Host port: " + receivePacket.getPort());
-        int len = receivePacket.getLength();
-        System.out.println("Length: " + len);
-//            socket.receive(receivePacket);
-//            System.out.println("Received packet");
-//            System.out.println("Packet length: "+receivedPacket.getLength());
+        System.out.println("From host port: " + receivePacket.getPort()+"\n");
         parseRequest(receivePacket);
     }
-
-    public void printRequest(RequestData request) {
-        System.out.println("Sending request to Scheduler with");
-        System.out.println("buttonType: "+request.direction);
-        System.out.println("floorNum: "+floorNum);
-        System.out.println("port: "+port);
+    /**
+     * Prints necessary information from the about the request packet to be sent
+     *
+     * @param request  RequestData instance containing packet request information
+     */
+    public void printRequestInfo(RequestData request) {
+        System.out.println("Floor: Sending request to Scheduler containing:");
+        System.out.println("Direction: "+request.direction);
+        System.out.println("Current floor: "+request.getCurrentFloor());
+        System.out.println("port: "+port+"\n");
     }
 
 }
