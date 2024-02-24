@@ -9,7 +9,7 @@ public class ElevatorStructure {
     @Getter
     private int id;
     @Getter
-    private ElevatorState state;
+    private ElevatorStateMachine state;
     @Getter
     @Setter
     private int currFloor;
@@ -19,7 +19,7 @@ public class ElevatorStructure {
     @Setter
     private int destPort;
 
-    public ElevatorStructure(int id, ElevatorState state, int currFloor, int port){
+    public ElevatorStructure(int id, ElevatorStateMachine state, int currFloor, int port){
         this.id = id;
         this.state = state;
         this.currFloor = currFloor;

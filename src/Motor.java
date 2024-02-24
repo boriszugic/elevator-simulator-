@@ -33,5 +33,6 @@ public class Motor {
             elevator.setCurrentFloor(elevator.getCurrentFloor() +
                     (floorNum - elevator.getCurrentFloor() > 0 ? 1 : -1));
         }
+        elevator.getState().Arrival();
     }
 }
