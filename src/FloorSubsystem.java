@@ -17,6 +17,7 @@ import java.util.concurrent.TimeUnit;
 
 @Getter
 public class FloorSubsystem {
+    @Getter
     static ArrayList<LinkedList<RequestData>> dataArray = new ArrayList<>();
     static ArrayList<Floor> floors = new ArrayList<>();
 
@@ -78,7 +79,7 @@ public class FloorSubsystem {
      * @param parts Input line split into parts
      * @throws ParseException If input parsing fails
      */
-    private static void processInput(String[] parts) throws ParseException {
+    public static void processInput(String[] parts) throws ParseException {
         Calendar calendar = Calendar.getInstance();
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss.SSS");
         calendar.setTime(sdf.parse(parts[0]));

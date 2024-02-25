@@ -83,7 +83,7 @@ public class Scheduler implements Runnable{
                 // elevator init
                 case 3:
                     Scheduler.getInstance().getElevators().add(new ElevatorStructure(
-                                                               data[0], elevatorStateMachine, // initialized
+                                                               data[0], elevatorStateMachine.getCurrentState(),
                                                                data[1], data[2]));
                     System.out.println("---- ADDED ELEVATOR ----");
                     break;
@@ -174,7 +174,7 @@ public class Scheduler implements Runnable{
      * @param data
      * @return false if any of the conditions are triggered, true otherwise
      */
-    private boolean isValid(byte[] data) {
+    public boolean isValid(byte[] data) {
 
         if (data.length != 3) { //Checks for sufficient length of data
             return false;
@@ -195,7 +195,7 @@ public class Scheduler implements Runnable{
      * @return The chosen elevator
      */
     private ElevatorStructure chooseElevator(Direction direction, int floorNum){
-        return elevators.get(0);
+        return elevators.getFirst();
     }
 
     /**
@@ -206,7 +206,7 @@ public class Scheduler implements Runnable{
      * @param floorNum  The floor number
      * @return The created DatagramPacket
      */
-    private DatagramPacket createElevatorPacket(int floorNum, int port){
+    public DatagramPacket createElevatorPacket(int floorNum, int port){
         try {
             return new DatagramPacket(new byte[]{(byte) floorNum}, 1,
                                       InetAddress.getLocalHost(), port);
@@ -222,7 +222,7 @@ public class Scheduler implements Runnable{
      * @param data  The byte array of data received from Elevator
      * @return The created DatagramPacket
      */
-    private DatagramPacket createFloorPacket(byte[] data,int port){
+    public DatagramPacket createFloorPacket(byte[] data,int port){
         try {
             return new DatagramPacket(data, 1,
                     InetAddress.getLocalHost(), port);

@@ -4,66 +4,73 @@ import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import src.Elevator;
+import src.ElevatorStructure;
+import src.ElevatorStateMachine;
+
 import java.util.ArrayList;
 
 
 /**
  * This class is the test class for testing the functionality
- * of the elevator class.
+ * of the elevator class and the elevator state machine.
  */
 public class ElevatorTests {
 
-    ArrayList<Elevator> elevators = new ArrayList<>();
-    private static final int numFloors = 3;
+    private static Elevator elevator;
+    private static ElevatorStructure stateElevator;
+    private static int numFloors = 3;
+
+    ElevatorStateMachine elevatorStateMachine = new ElevatorStateMachine();
 
     /**
      * Initialize the testing environment with two elevators.
      */
-    /*
+
     @Before
     public void setUp(){
-        for (int i = 1; i <= numFloors; i++){
-            Elevator elevator = new Elevator(numFloors);
-            elevators.add(elevator);
-            new Thread(elevator).start();
-        }
+        elevator = new Elevator(numFloors);
+        stateElevator = new ElevatorStructure(1, elevatorStateMachine.getCurrentState(), 1, 0);
     }
 
     /**
      * This method tests that the elevators are initialized in the proper state.
-
+*/
     @Test
     public void testInit(){
-        for (int i = 0; i < numFloors; i++){
-            assertEquals(elevators.get(i).getCurrentFloor(), 1);
-            assertEquals(elevators.get(i).getNumOfPassengers(), 1);
-            assertEquals(elevators.get(i).getDestinationFloor(), 1);
-        }
+        assertEquals(elevator.getCurrentFloor(), 1);
+        assertEquals(elevator.getNumOfPassengers(), 0);
+        assertEquals(elevator.getDestinationFloor(), 0);
+        assertEquals(elevator.getId(), 1);
+        assertNotEquals(elevator.getDisplay(), null);
+        assertNotEquals(elevator.getButtons(), null);
+        assertNotEquals(elevator.getLamps(), null);
     }
-    */
     /**
      * The method tests that an elevator is capable of changing the
      * stated floor via the move method.
      */
-    /**
     @Test
     public void testMove(){
-        assertEquals(elevators.get(0).move(2), true);
-        assertEquals(elevators.get(0).getCurrentFloor(), 2);
-        assertEquals(elevators.get(0).move(3), true);
-        assertEquals(elevators.get(0).getCurrentFloor(), 3);
-        assertEquals(elevators.get(0).move(4), false);
-        assertEquals(elevators.get(0).getCurrentFloor(), 3);
-        assertEquals(elevators.get(0).move(3), false);
-        assertEquals(elevators.get(0).getCurrentFloor(), 3);
+        elevator.move(2);
+        assertEquals(2, elevator.getCurrentFloor());
+        elevator.move(3);
+        assertEquals(3, elevator.getCurrentFloor());
+        elevator.move(4);
+        assertEquals(3, elevator.getCurrentFloor());
     }
-*/
     /**
-     * This method tests whether the elevators can process information
-     * and subsequently change their attributes.
+     * This method tests whether the elevators simulated by the state
+     * machine can successfully change states from idling to moving
+     * and unloading/loading.
      */
     @Test
-    public void testParse(){
-        //TBD
+    public void testStates(){
+        assertEquals("Idle", elevatorStateMachine.getCurrentState().toString());
+        elevatorStateMachine.requestReceived();
+        assertEquals("Moving", elevatorStateMachine.getCurrentState().toString());
+        elevatorStateMachine.Arrival();
+        assertEquals("Unloading/Loading", elevatorStateMachine.getCurrentState().toString());
+        elevatorStateMachine.setState("IdleState");
+        assertEquals("Idle", elevatorStateMachine.getCurrentState().toString());
     }
 }

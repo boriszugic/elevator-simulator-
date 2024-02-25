@@ -150,11 +150,15 @@ public class Elevator implements Runnable {
      * @param floorNum floor number to move to
      */
     public void move(int floorNum){
-        System.out.println("Moving to floor: "+floorNum+" from currentFloor: "+currentFloor);
-        motor.move(floorNum);
-        door.open();
-        display.display(currentFloor);
-        sendUpdate();
+        if(floorNum <= numOfFloors){
+            System.out.println("Moving to floor: "+floorNum+" from currentFloor: "+currentFloor);
+            motor.move(floorNum);
+            door.open();
+            display.display(currentFloor);
+            sendUpdate();
+        }else{
+            System.out.println("Floor does not exist.");
+        }
     }
 
     /**
