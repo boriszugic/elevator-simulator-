@@ -3,6 +3,8 @@ package test;
 import org.junit.Before;
 import org.junit.Test;
 import src.*;
+
+import java.net.DatagramPacket;
 import java.util.ArrayList;
 import static org.junit.Assert.*;
 
@@ -20,7 +22,8 @@ public class SchedulerTests {
      */
     @Before
     public void setUp(){
-        //scheduler = Scheduler.getInstance();
+        String[] args = null;
+        Scheduler.main(args);
     }
 
     /**
@@ -65,7 +68,11 @@ public class SchedulerTests {
      */
     @Test
     public void testCreatePacket(){
-        //Unnecessary for current iteration, scheduler does not create new packets.
+        DatagramPacket data1 = scheduler.createElevatorPacket(numFloors, 64);
+        assertNotNull(data1);
+        byte[] temp = new byte[]{0};
+        DatagramPacket data2 = scheduler.createFloorPacket(temp, 64);
+        assertNotNull(data2);
     }
 
     /**
@@ -74,6 +81,7 @@ public class SchedulerTests {
      */
     @Test
     public void testParse(){
-        //Unnecessary for current iteration, scheduler does not parse packets.
+        byte[] test = new byte[]{0000};
+        assertTrue(scheduler.isValid(test));
     }
 }

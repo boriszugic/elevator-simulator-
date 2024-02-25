@@ -1,18 +1,10 @@
 package src;
+import lombok.Getter;
+
 import java.util.HashMap;
 import java.util.Map;
 
-interface ElevatorState {
-    void requestReceived(ElevatorStateMachine context);
-
-    void Arrival(ElevatorStateMachine context);
-
-    void displayState();
-
-    void nextRequest(ElevatorStateMachine context);
-}
-
-    class idleState implements ElevatorState{
+class idleState implements ElevatorState{
     @Override
         public void requestReceived(ElevatorStateMachine context){
         System.out.println("Elevator Request Received!");
@@ -28,6 +20,11 @@ interface ElevatorState {
         public void nextRequest(ElevatorStateMachine context){
             System.out.println("Request completed, moving on");
            context.setState("Moving");
+        }
+
+        @Override
+        public String toString(){
+            return "Idle";
         }
     }
 
@@ -48,6 +45,11 @@ interface ElevatorState {
         public void nextRequest(ElevatorStateMachine context){
             System.out.println("Request Skipped, moving on");
             context.setState("Moving");
+        }
+
+        @Override
+        public String toString(){
+            return "Moving";
         }
     }
 
@@ -70,12 +72,17 @@ interface ElevatorState {
         public void nextRequest(ElevatorStateMachine context){
 
         }
+        @Override
+        public String toString(){
+            return "Unloading/Loading";
+        }
     }
 
 
 
-class ElevatorStateMachine {
+public class ElevatorStateMachine {
     private Map<String, ElevatorState> states;
+    @Getter
     private ElevatorState currentState;
 
     public ElevatorStateMachine(){
