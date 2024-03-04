@@ -1,128 +1,83 @@
 package src;
-import lombok.Getter;
 
+import lombok.Getter;
+import lombok.Setter;
 import java.util.HashMap;
 import java.util.Map;
 
-class idleState implements ElevatorState{
+class IdleState implements ElevatorState{
     @Override
-        public void requestReceived(ElevatorStateMachine context){
-        System.out.println("Elevator Request Received!");
-        context.setState("Moving");
+    public void requestReceived(ElevatorStateMachine context){
+        context.setState(new Moving());
     }
-        public void displayState(){
-        System.out.println("Elevator is currently IDLE.");
-        }
-        public void Arrival(ElevatorStateMachine context){
-        // not a possible sequence just for formality.
-        System.out.println("Arrived.");
-        }
-        public void nextRequest(ElevatorStateMachine context){
-            System.out.println("Request completed, moving on");
-           context.setState("Moving");
-        }
-
-        @Override
-        public String toString(){
-            return "Idle";
-        }
+    public void displayState(){}
+    public void Arrival(ElevatorStateMachine context){}
+    public void nextRequest(ElevatorStateMachine context){
+        context.setState(new Moving());
     }
 
-    class Moving implements ElevatorState{
-        @Override
-        public void requestReceived(ElevatorStateMachine context){
-            System.out.println("Elevator Request Received!");
-        }
-        public void displayState(){
-            System.out.println("Elevator is currently MOVING.");
-        }
-        public void Arrival(ElevatorStateMachine context){
-            System.out.println("Opening Doors...");
-            System.out.println("Doors are open");
-            System.out.println("Arrived.");
-            context.setState("Unloading / Loading");
-        }
-        public void nextRequest(ElevatorStateMachine context){
-            System.out.println("Request Skipped, moving on");
-            context.setState("Moving");
-        }
-
-        @Override
-        public String toString(){
-            return "Moving";
-        }
+    @Override
+    public String toString(){
+        return "Idle";
     }
+}
 
-    class UnloadingLoading implements ElevatorState{
-        @Override
-        public void requestReceived(ElevatorStateMachine context){
-            System.out.println("Elevator Request Received!");
-            System.out.println("Doors are closing.");
-            System.out.println("Doors are closed.");
-            System.out.println("Request completed, moving on");
-            context.setState("Moving");
-        }
-        public void displayState(){
-            System.out.println("Elevator is currently STOPPED with the doors OPEN");
-        }
-        public void Arrival(ElevatorStateMachine context){
-            // not a possible sequence just for formality.
-            System.out.println("Arrived.");
-        }
-        public void nextRequest(ElevatorStateMachine context){
-
-        }
-        @Override
-        public String toString(){
-            return "Unloading/Loading";
-        }
+class Moving implements ElevatorState{
+    @Override
+    public void requestReceived(ElevatorStateMachine context){}
+    public void displayState(){}
+    public void Arrival(ElevatorStateMachine context){
+        context.setState(new UnloadingLoading());
     }
+    public void nextRequest(ElevatorStateMachine context){
+        context.setState(new Moving());
+    }
+    @Override
+    public String toString(){
+        return "Moving";
+    }
+}
 
-
+class UnloadingLoading implements ElevatorState{
+    @Override
+    public void requestReceived(ElevatorStateMachine context){
+        context.setState(new Moving());
+    }
+    public void displayState(){}
+    public void Arrival(ElevatorStateMachine context){}
+    public void nextRequest(ElevatorStateMachine context){}
+    @Override
+    public String toString(){
+        return "Unloading/Loading";
+    }
+}
 
 public class ElevatorStateMachine {
     private Map<String, ElevatorState> states;
+    @Setter
     @Getter
-    private ElevatorState currentState;
+    private ElevatorState state;
 
-    public ElevatorStateMachine(){
+    public ElevatorStateMachine() {
         states = new HashMap<>();
-        states.put("IdleState", new idleState());
+        states.put("IdleState", new IdleState());
         states.put("Moving", new Moving());
         states.put("Unloading / Loading", new UnloadingLoading());
-        currentState = states.get("IdleState");
+        state = states.get("IdleState");
     }
-    public void setState(String stateName){
-        this.currentState = states.get(stateName);
 
-    }
     // when a floor button is pressed and a request for elevator is received.
-    public void requestReceived(){
-       // System.out.println("State Before :" );
-        currentState.displayState();
-        currentState.requestReceived(this);
-        //System.out.println("State After :" );
-        currentState.displayState();
+    public void requestReceived() {
+        state.requestReceived(this);
     }
 
     // for when an elevator is in motion.
-    public void Arrival(){
-        System.out.println("Elevator has now arrived");
-        currentState.Arrival(this);
-
+    public void Arrival() {
+        state.Arrival(this);
     }
-
 
     // for when the elevator has completed a request and must transition states.
-    public void nextRequest(){
-        System.out.println("Request completed, moving on");
-        currentState.nextRequest(this);
+    public void nextRequest() {
+        state.nextRequest(this);
     }
-
-
 }
-
-//public enum ElevatorState {
- //   IDLE,
- //   MOVING
-//}
