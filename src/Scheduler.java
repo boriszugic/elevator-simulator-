@@ -3,9 +3,7 @@ package src;
 import lombok.Getter;
 import java.io.IOException;
 import java.net.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -19,9 +17,9 @@ public class Scheduler implements Runnable{
     @Getter
     private final DatagramSocket socket;
     @Getter
-    private List<FloorStructure> floors;
+    private HashMap<Integer, FloorStructure> floors;
     @Getter
-    private List<ElevatorStructure> elevators;
+    private HashMap<Integer, ElevatorStructure> elevators;
 
     /**
      * Private constructor to prevent instantiation from outside the class.
@@ -29,8 +27,8 @@ public class Scheduler implements Runnable{
     private Scheduler() {
         try {
             this.socket = new DatagramSocket(port);
-            this.elevators = new ArrayList<>();
-            this.floors = new ArrayList<>();
+            this.elevators = new HashMap<>();
+            this.floors = new HashMap<>();
         } catch (SocketException e) {
             logger.error("Error creating DatagramSocket");
             throw new RuntimeException("Error creating DatagramSocket", e);
@@ -58,7 +56,7 @@ public class Scheduler implements Runnable{
      * Initializes floors and elevators
      */
     private static void initializeFloorsAndElevators() {
-        ElevatorStateMachine elevatorStateMachine = new ElevatorStateMachine();
+        //ElevatorStateMachine elevatorStateMachine = new ElevatorStateMachine();
 
         boolean isFloorInitDone = false, isElevatorInitDone = false;
 
@@ -78,13 +76,13 @@ public class Scheduler implements Runnable{
                     break;
                 // floor init
                 case 2:
-                    Scheduler.getInstance().getFloors().add(new FloorStructure(data[0], data[1]));
+                    Scheduler.getInstance().getFloors().put((int) data[0], new FloorStructure(data[0], data[1]));
                     logger.debug("---- ADDED FLOOR ----");
                     break;
                 // elevator init
                 case 3:
-                    Scheduler.getInstance().getElevators().add(new ElevatorStructure(
-                                                               data[0], elevatorStateMachine.getState(),
+                    Scheduler.getInstance().getElevators().put((int) data[2],new ElevatorStructure(
+                                                               data[0], ElevatorStateEnum.IDLE,
                                                                data[1], data[2]));
                     logger.debug("---- ADDED ELEVATOR ----");
                     break;
@@ -103,22 +101,22 @@ public class Scheduler implements Runnable{
 
     /** Prints floor and elevator information */
     private static void printFloorAndElevatorInfo(Scheduler scheduler) {
-        for (FloorStructure floor : scheduler.getFloors()) {
+        for (FloorStructure floor : scheduler.getFloors().values()) {
             logger.debug(floor.toString());
         }
-        for (ElevatorStructure elevator : scheduler.getElevators()) {
+        for (ElevatorStructure elevator : scheduler.getElevators().values()) {
             logger.debug(elevator.toString());
         }
     }
 
     /** Adds an elevator to the scheduler */
     public void addElevator(ElevatorStructure elevator) {
-        elevators.add(elevator);
+        elevators.put(elevator.getPort(), elevator);
     }
 
     /** Adds a floor to the scheduler */
     public void addFloor(FloorStructure floor) {
-        floors.add(floor);
+        floors.put(floor.getFloorNum(), floor);
     }
 
     /** Returns the singleton instance of the Scheduler */
@@ -154,26 +152,32 @@ public class Scheduler implements Runnable{
      */
     private DatagramPacket parseRequest(DatagramPacket packet){
         byte[] data = packet.getData();
-        ElevatorStructure elevator = chooseElevator((data[0] == 0 ? Direction.DOWN : Direction.UP), data[1]);
-
-        if (packet.getLength() == 3 && isValid(data)){ //Elevator packet request to retrieve elevator
+        if (packet.getLength() == 3 && data[2] == 0){ // Elevator response
+            byte[] updateData = new byte[]{data[0]};
+            printPacketReceived(packet,"Elevator");
+            elevators.get((int)data[0]).setCurrFloor(data[0]);
+            return createFloorPacket(updateData, packet.getData()[1]);
+        }
+        else if (packet.getLength() == 3 && isValid(data)){ //Elevator packet request to retrieve elevator
             printPacketReceived(packet,"Floor");
+            // Choose elevator
+            ElevatorStructure elevator = chooseElevator((data[0] == 0 ? Direction.DOWN : Direction.UP), data[1]);
+            // Assign floor the chosen elevator
+            floors.get((int) data[1]).setElevatorPort(elevator.getPort());
             return createElevatorPacket(data[1], elevator.getPort());
         }
         else if (packet.getLength() == 2) {
-            if(packet.getData()[1] == 0){ //Floor request from when passenger is has boarded elevator
-                printPacketReceived(packet,"Floor");
-                int floorNum = packet.getData()[0];
-                if(floorNum <= floors.size()){return createElevatorPacket(floorNum, elevator.getPort());}
-            }
-            else{ //Elevator Response Packet
-                byte[] updateData = new byte[]{packet.getData()[0]};
-                int port = packet.getData()[1];
-                printPacketReceived(packet,"Elevator");
-                return createFloorPacket(updateData,port);
+            //Floor request when passenger pressed elevator button
+            printPacketReceived(packet, "Floor");
+            int floorNum = data[0];
+            if (floorNum <= floors.size()) {
+                // Create a packet to elevator port assigned to floor in the if statement above
+                DatagramPacket returnPacket = createElevatorPacket(floorNum, floors.get((int)data[1]).getElevatorPort());
+                elevators.get(floors.get((int)data[1]).getElevatorPort()).setState(ElevatorStateEnum.IDLE);
+                return returnPacket;
             }
         }
-        // error checking
+        // Error checking
         logger.error("Invalid request (Improper format).");
         throw new RuntimeException("Invalid request (Improper format).");
     }
@@ -205,13 +209,34 @@ public class Scheduler implements Runnable{
      * @return The chosen elevator
      */
     private ElevatorStructure chooseElevator(Direction direction, int floorNum){
-        // sort the elevators in order closest to furthest from floor
+        // Sort the elevators by their distance to the requested floor
+        List<ElevatorStructure> elevs = new ArrayList<>(elevators.values());
+        elevs.sort(Comparator.comparingInt(e -> Math.abs(e.getCurrFloor() - floorNum)));
+        // Filter and find the first elevator that is either idle or moving towards the requested floor
+        Optional<ElevatorStructure> suitableElevator = elevs.stream()
+                .filter(elevator -> isElevatorSuitable(elevator, direction, floorNum))
+                .findFirst();
+        // Set the new state of Scheduler's copy (Elevator will set its own)
+        if(suitableElevator.get().getCurrFloor() - floorNum != 0) {
+            suitableElevator.get().setState((suitableElevator.get().getCurrFloor() > floorNum) ?
+                    ElevatorStateEnum.MOVING_DOWN :
+                    ElevatorStateEnum.MOVING_UP);
+        }
+        logger.debug("Chose Elevator " + suitableElevator.get().getId());
+        return suitableElevator.get(); // Return the found elevator
+    }
 
-        // iterate through list
-
-        // if elevator is idle or moving in the direction of floor
-        // return elevator
-        return elevators.getFirst();
+    private boolean isElevatorSuitable(ElevatorStructure elevator, Direction direction, int floorNum) {
+        switch (elevator.getState()) {
+            case IDLE:
+                return true; // An idle elevator is always suitable
+            case MOVING_UP:
+                return direction == Direction.UP && elevator.getCurrFloor() <= floorNum;
+            case MOVING_DOWN:
+                return direction == Direction.DOWN && elevator.getCurrFloor() >= floorNum;
+            default:
+                return false; // If the elevator is in a state that doesn't allow it to take new requests
+        }
     }
 
     /**

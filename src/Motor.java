@@ -24,7 +24,7 @@ public class Motor {
      */
     public void move(int floorNum) {
         if (elevator.getCurrentFloor() == floorNum){
-            elevator.getDisplay().display(elevator.getCurrentFloor());
+            //elevator.getDisplay().display(elevator.getCurrentFloor());
             return;
         }
 
@@ -38,6 +38,6 @@ public class Motor {
                     (floorNum - elevator.getCurrentFloor() > 0 ? 1 : -1));
             elevator.getDisplay().display(elevator.getCurrentFloor());
         }
-        elevator.getState().Arrival();
+        //elevator.getState().Arrival();
     }
 }

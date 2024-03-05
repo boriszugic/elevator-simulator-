@@ -105,6 +105,7 @@ public class Floor implements Runnable {
     public DatagramPacket createPacket(int floorNum) {
         byte[] data = new byte[2];
         data[0] = (byte) floorNum;
+        data[1] = (byte) this.floorNum;
         try {
             return new DatagramPacket(data, data.length, InetAddress.getLocalHost(), SCHEDULER_PORT);
         } catch (UnknownHostException e) {
@@ -121,8 +122,10 @@ public class Floor implements Runnable {
         logger.debug("Packet data: " + packet.getData()[0]);
         switch (packet.getData()[0]) {
             case 0: // open door
-                board();
                 break;
+                default:
+                    board();
+                    break;
         }
     }
 

@@ -47,7 +47,7 @@ public class Elevator implements Runnable {
     @Getter
     private int numOfPassengers;
     @Getter
-    private ElevatorStateMachine state = new ElevatorStateMachine();
+    private ElevatorStateEnum state;
 
     static synchronized int getNextPortNum() {
         return nextPortNum++;
@@ -65,9 +65,10 @@ public class Elevator implements Runnable {
         door = new Door();
         display = new Display();
         currentFloor = 1;
+        display.display(currentFloor);
         destinationFloor = 0;
         numOfPassengers = 0;
-        state.setState(new IdleState()); //elevator initialized to idle.
+        state = ElevatorStateEnum.IDLE; //elevator initialized to idle.
 
         try {
             this.socket = new DatagramSocket(port);
@@ -142,8 +143,9 @@ public class Elevator implements Runnable {
      */
     private void parseRequest(DatagramPacket packet){
         printPacketReceived(packet);
-        state.requestReceived();
         int floorNum = packet.getData()[0];
+        //state.requestReceived();
+        state = (this.currentFloor >= floorNum) ? ElevatorStateEnum.MOVING_DOWN : ElevatorStateEnum.MOVING_UP;
         move(floorNum);
     }
 
@@ -156,6 +158,7 @@ public class Elevator implements Runnable {
         logger.debug("Moving to floor " + floorNum + " from currentFloor " + currentFloor);
         motor.move(floorNum);
         door.open();
+        state = ElevatorStateEnum.LOADING_UNLOADING;
         sendUpdate();
     }
 
@@ -182,8 +185,8 @@ public class Elevator implements Runnable {
     public DatagramPacket createPacket(UpdateType updateType) {
         try {
             printPacketRequest(updateType);
-            byte [] data = new byte[2];
-            data[0] = (byte) updateType.ordinal();
+            byte [] data = new byte[3];
+            data[0] = (byte) port;
             data[1] = (byte) currentFloor;
             return new DatagramPacket(data, data.length,
                     InetAddress.getLocalHost(), SCHEDULER_PORT);
