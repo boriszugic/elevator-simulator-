@@ -63,9 +63,9 @@ public class Elevator implements Runnable {
         this.numOfFloors = numFloors;
         motor = new Motor(this);
         door = new Door();
-        display = new Display();
+        display = new Display(this);
         currentFloor = 1;
-        display.display(currentFloor);
+        display.display(String.valueOf(currentFloor));
         destinationFloor = 0;
         numOfPassengers = 0;
         state = ElevatorStateEnum.IDLE; //elevator initialized to idle.
