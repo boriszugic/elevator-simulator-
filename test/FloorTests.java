@@ -1,18 +1,11 @@
 package test;
 
-import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import src.Floor;
 import src.FloorSubsystem;
-import src.RequestData;
-
 import java.net.DatagramPacket;
 import java.text.ParseException;
-import java.util.ArrayList;
 import static org.junit.Assert.*;
 
 /**
@@ -22,13 +15,11 @@ import static org.junit.Assert.*;
 public class FloorTests {
     private static Floor floor;
     private static final int numFloors = 3;
-    private static FloorSubsystem subFloor;
 
     /**
      * Initializes the testing environment with a default parameter
      * of 3 floors.
      */
-
     @Before
     public void setUp(){
         floor = new Floor();

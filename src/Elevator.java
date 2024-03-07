@@ -14,6 +14,7 @@ public class Elevator implements Runnable {
     // Constants
     private static final int MAX_NUM_OF_PASSENGERS = 10;
     private static final int SCHEDULER_PORT = 64;
+    private final Logger logger;
 
     // Static variables
     private static int nextPortNum = 65;
@@ -46,7 +47,7 @@ public class Elevator implements Runnable {
     @Getter
     private int numOfPassengers;
     @Getter
-    private ElevatorStateMachine state = new ElevatorStateMachine();
+    private ElevatorStateEnum state;
 
     static synchronized int getNextPortNum() {
         return nextPortNum++;
@@ -56,20 +57,23 @@ public class Elevator implements Runnable {
         return nextId++;
     }
     public Elevator(int numFloors) {
+        this.id = getNextId();
+        this.logger = new Logger(System.getProperty("user.home") + "/elevator" + this.id + ".log");
         this.port = getNextPortNum();
         this.numOfFloors = numFloors;
-        this.id = getNextId();
         motor = new Motor(this);
         door = new Door();
-        display = new Display();
+        display = new Display(this);
         currentFloor = 1;
+        display.display(String.valueOf(currentFloor));
         destinationFloor = 0;
         numOfPassengers = 0;
-        state.setState("IdleState"); //elevator initialized to idle.
+        state = ElevatorStateEnum.IDLE; //elevator initialized to idle.
 
         try {
             this.socket = new DatagramSocket(port);
         } catch (SocketException e) {
+            logger.error("Error creating DatagramSocket");
             throw new RuntimeException("Error creating DatagramSocket", e);
         }
 
@@ -112,7 +116,8 @@ public class Elevator implements Runnable {
                                                              (byte) elevator.getId(),
                                                              (byte) elevator.getCurrentFloor(),
                                                              (byte) elevator.getPort()},
-                                                       3, InetAddress.getLocalHost(), SCHEDULER_PORT));
+                                                       3, InetAddress.getLocalHost(),
+                                                              SCHEDULER_PORT));
             }
         } catch(IOException e){
             throw new RuntimeException(e);
@@ -137,10 +142,10 @@ public class Elevator implements Runnable {
      * Parses received data and updates attributes accordingly
      */
     private void parseRequest(DatagramPacket packet){
-        // Process the received datagram.
         printPacketReceived(packet);
-        state.requestReceived();
         int floorNum = packet.getData()[0];
+        //state.requestReceived();
+        state = (this.currentFloor >= floorNum) ? ElevatorStateEnum.MOVING_DOWN : ElevatorStateEnum.MOVING_UP;
         move(floorNum);
     }
 
@@ -150,15 +155,11 @@ public class Elevator implements Runnable {
      * @param floorNum floor number to move to
      */
     public void move(int floorNum){
-        if(floorNum <= numOfFloors){
-            System.out.println("Moving to floor: "+floorNum+" from currentFloor: "+currentFloor);
-            motor.move(floorNum);
-            door.open();
-            display.display(currentFloor);
-            sendUpdate();
-        }else{
-            System.out.println("Floor does not exist.");
-        }
+        logger.debug("Moving to floor " + floorNum + " from currentFloor " + currentFloor);
+        motor.move(floorNum);
+        door.open();
+        state = ElevatorStateEnum.LOADING_UNLOADING;
+        sendUpdate();
     }
 
     /**
@@ -184,8 +185,8 @@ public class Elevator implements Runnable {
     public DatagramPacket createPacket(UpdateType updateType) {
         try {
             printPacketRequest(updateType);
-            byte [] data = new byte[2];
-            data[0] = (byte) updateType.ordinal();
+            byte [] data = new byte[3];
+            data[0] = (byte) port;
             data[1] = (byte) currentFloor;
             return new DatagramPacket(data, data.length,
                     InetAddress.getLocalHost(), SCHEDULER_PORT);
@@ -203,24 +204,22 @@ public class Elevator implements Runnable {
     private boolean isOverloaded() {
         return numOfPassengers > MAX_NUM_OF_PASSENGERS;
     }
+
     /**
      * Prints necessary information from the received packet.
      *
      * @param packet  The byte array of data received from Elevator
      */
     private void printPacketReceived(DatagramPacket packet){
-        System.out.println("Elevator: Packet received from Scheduler:");
-        System.out.println("From host port: " + packet.getPort());
-        System.out.println("Containing: "+ Arrays.toString(packet.getData())+"\n");
+        logger.debug("RECEIVED: " + Arrays.toString(packet.getData()));
     }
+
     /**
      * Prints necessary information from the received packet.
      *
      * @param updateType  The elevator updateType
      */
     private void printPacketRequest(UpdateType updateType){
-        System.out.println("Elevator: Sending packet:");
-        System.out.println("Destination host port: "+SCHEDULER_PORT);
-        System.out.println("Elevator status: "+updateType+"\n");
+        logger.debug("SENDING: " + updateType);
     }
 }

@@ -27,4 +27,9 @@ public class RequestData {
         this.direction = direction;
         this.requestFloor = requestFloor;
     }
+
+    @Override
+    public String toString() {
+        return " | " + time + " | " + currentFloor + " | " + direction + " | ";
+    }
 }

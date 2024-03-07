@@ -4,11 +4,9 @@ import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import src.Elevator;
+import src.ElevatorStateEnum;
 import src.ElevatorStructure;
 import src.ElevatorStateMachine;
-
-import java.util.ArrayList;
-
 
 /**
  * This class is the test class for testing the functionality
@@ -25,16 +23,15 @@ public class ElevatorTests {
     /**
      * Initialize the testing environment with two elevators.
      */
-
     @Before
     public void setUp(){
         elevator = new Elevator(numFloors);
-        stateElevator = new ElevatorStructure(1, elevatorStateMachine.getCurrentState(), 1, 0);
+        stateElevator = new ElevatorStructure(1, ElevatorStateEnum.IDLE, 1, 0);
     }
 
     /**
      * This method tests that the elevators are initialized in the proper state.
-*/
+    */
     @Test
     public void testInit(){
         assertEquals(elevator.getCurrentFloor(), 1);
@@ -45,6 +42,7 @@ public class ElevatorTests {
         assertNotEquals(elevator.getButtons(), null);
         assertNotEquals(elevator.getLamps(), null);
     }
+
     /**
      * The method tests that an elevator is capable of changing the
      * stated floor via the move method.
@@ -58,6 +56,7 @@ public class ElevatorTests {
         elevator.move(4);
         assertEquals(3, elevator.getCurrentFloor());
     }
+
     /**
      * This method tests whether the elevators simulated by the state
      * machine can successfully change states from idling to moving
@@ -65,12 +64,12 @@ public class ElevatorTests {
      */
     @Test
     public void testStates(){
-        assertEquals("Idle", elevatorStateMachine.getCurrentState().toString());
+        assertEquals("Idle", elevatorStateMachine.getState().toString());
         elevatorStateMachine.requestReceived();
-        assertEquals("Moving", elevatorStateMachine.getCurrentState().toString());
+        assertEquals("Moving", elevatorStateMachine.getState().toString());
         elevatorStateMachine.Arrival();
-        assertEquals("Unloading/Loading", elevatorStateMachine.getCurrentState().toString());
-        elevatorStateMachine.setState("IdleState");
-        assertEquals("Idle", elevatorStateMachine.getCurrentState().toString());
+        assertEquals("Unloading/Loading", elevatorStateMachine.getState().toString());
+        //elevatorStateMachine.setState(new IdleState());
+        assertEquals("Idle", elevatorStateMachine.getState().toString());
     }
 }

@@ -2,7 +2,14 @@ package src;
 
 public class Display {
 
-    public <T> void display(T message) {
-        System.out.println("DISPLAY: " + message);
+    Elevator elevator;
+    private final GUI gui;
+    public Display(Elevator e){
+        elevator = e;
+        gui = new GUI(e.getId(), e.getPort());
+    }
+
+    public void display(String message) {
+        gui.display(message);
     }
 }

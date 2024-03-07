@@ -13,7 +13,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.LinkedList;
-import java.util.concurrent.TimeUnit;
 
 @Getter
 public class FloorSubsystem {
@@ -58,7 +57,11 @@ public class FloorSubsystem {
 
             saveFloorInScheduler(null);
 
-            TimeUnit.SECONDS.sleep(3);
+            // wait until Scheduler is done initializing
+            DatagramPacket receivedPacket = new DatagramPacket(new byte[3], 3);
+            DatagramSocket socket = new DatagramSocket(150);
+            socket.receive(receivedPacket);
+            socket.close();
 
             // start floor threads
             for (Floor floor : floors){
@@ -69,7 +72,7 @@ public class FloorSubsystem {
         } catch (IOException e) {
             System.err.println("Error reading input file: " + e.getMessage());
             e.printStackTrace();
-        } catch (ParseException | InterruptedException e) {
+        } catch (ParseException e) {
             throw new RuntimeException(e);
         }
     }
@@ -109,7 +112,7 @@ public class FloorSubsystem {
                 // Create and send DatagramPacket containing floor information
                 floor.getSocket().send(new DatagramPacket(new byte[]{
                                        (byte) floor.getFloorNum(),
-                                       (byte) floor.getPort()},
+                                       (byte) floor.getId()},
                                  2, InetAddress.getLocalHost(), 64));
             }
         } catch(IOException e){

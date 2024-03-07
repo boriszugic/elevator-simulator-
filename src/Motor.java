@@ -23,8 +23,12 @@ public class Motor {
      * @param floorNum The target floor number
      */
     public void move(int floorNum) {
+        if (elevator.getCurrentFloor() == floorNum){
+            //elevator.getDisplay().display(elevator.getCurrentFloor());
+            return;
+        }
+
         while (elevator.getCurrentFloor() != floorNum) {
-            elevator.getDisplay().display(elevator.getCurrentFloor());
             try {
                 TimeUnit.SECONDS.sleep(2);
             } catch (InterruptedException e) {
@@ -32,7 +36,8 @@ public class Motor {
             }
             elevator.setCurrentFloor(elevator.getCurrentFloor() +
                     (floorNum - elevator.getCurrentFloor() > 0 ? 1 : -1));
+            elevator.getDisplay().display(String.valueOf(elevator.getCurrentFloor()));
         }
-        elevator.getState().Arrival();
+        //elevator.getState().Arrival();
     }
 }
