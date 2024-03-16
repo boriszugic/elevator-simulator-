@@ -1,0 +1,189 @@
+<mxfile host="app.diagrams.net" modified="2024-03-16T21:40:46.931Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36" etag="d674wV3XABdpvJsmm3J9" version="24.0.7" type="device">
+  <diagram name="Page-1" id="PvMmBn6i1ijl0CdpWlQL">
+    <mxGraphModel dx="2870" dy="1229" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="htWQr3QKB11t6zbesEdf-1" value="Idle" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=none;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="-210" y="160" width="210" height="106" as="geometry" />
+        </mxCell>
+        <mxCell id="htWQr3QKB11t6zbesEdf-2" value="Entry /&amp;nbsp;&lt;br&gt;Exit / Move Request" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="htWQr3QKB11t6zbesEdf-1" vertex="1">
+          <mxGeometry y="26" width="210" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="htWQr3QKB11t6zbesEdf-50" value="Entry /&amp;nbsp;&lt;br&gt;Exit / Move Request" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="htWQr3QKB11t6zbesEdf-1" vertex="1">
+          <mxGeometry y="66" width="210" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="htWQr3QKB11t6zbesEdf-3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="htWQr3QKB11t6zbesEdf-4" target="htWQr3QKB11t6zbesEdf-5" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="htWQr3QKB11t6zbesEdf-4" value="Floor Requested" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="50" y="270" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="htWQr3QKB11t6zbesEdf-5" value="Motor Moves Elevator" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="80" y="390" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="htWQr3QKB11t6zbesEdf-6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="htWQr3QKB11t6zbesEdf-7" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="10" y="630" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="htWQr3QKB11t6zbesEdf-7" value="Door Open" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="70" y="610" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="htWQr3QKB11t6zbesEdf-8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="htWQr3QKB11t6zbesEdf-9" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="-240" y="900" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="htWQr3QKB11t6zbesEdf-9" value="Door Closes" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="-80" y="810" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="htWQr3QKB11t6zbesEdf-10" value="Elevator Arrives" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="-70" y="460" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="htWQr3QKB11t6zbesEdf-11" value="Unloading / Loading (STOPPED)" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=none;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="-455" y="580" width="465" height="86" as="geometry" />
+        </mxCell>
+        <mxCell id="htWQr3QKB11t6zbesEdf-30" value="Entry / Floor Request has been successfuly made,&lt;br style=&quot;border-color: var(--border-color);&quot;&gt;&amp;nbsp;Elevator has arrived at destination &amp;amp; doors open&lt;br style=&quot;border-color: var(--border-color);&quot;&gt;Exit / Doors close" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="htWQr3QKB11t6zbesEdf-11" vertex="1">
+          <mxGeometry y="26" width="465" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="htWQr3QKB11t6zbesEdf-12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.75;entryDx=0;entryDy=0;" parent="1" source="htWQr3QKB11t6zbesEdf-13" target="htWQr3QKB11t6zbesEdf-10" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="-100" y="545" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="htWQr3QKB11t6zbesEdf-13" value="Moving" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=none;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="-275" y="344" width="225" height="66" as="geometry" />
+        </mxCell>
+        <mxCell id="htWQr3QKB11t6zbesEdf-14" value="Entry / Floor Request is being executed&lt;br&gt;Exit / Elevator Arrives" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="htWQr3QKB11t6zbesEdf-13" vertex="1">
+          <mxGeometry y="26" width="225" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="htWQr3QKB11t6zbesEdf-15" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.38;entryY=-0.017;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="htWQr3QKB11t6zbesEdf-2" target="htWQr3QKB11t6zbesEdf-4" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="htWQr3QKB11t6zbesEdf-16" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.996;entryY=0.145;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="htWQr3QKB11t6zbesEdf-5" target="htWQr3QKB11t6zbesEdf-14" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="htWQr3QKB11t6zbesEdf-17" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.577;entryY=-0.017;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="htWQr3QKB11t6zbesEdf-10" target="htWQr3QKB11t6zbesEdf-7" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="htWQr3QKB11t6zbesEdf-18" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.503;exitY=1.034;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" target="htWQr3QKB11t6zbesEdf-9" edge="1" source="htWQr3QKB11t6zbesEdf-30">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="-217.5" y="706" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="htWQr3QKB11t6zbesEdf-19" value="Idle" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=none;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="-322.5" y="900" width="210" height="66" as="geometry" />
+        </mxCell>
+        <mxCell id="htWQr3QKB11t6zbesEdf-20" value="Entry /&amp;nbsp;&lt;br&gt;Exit / Move Request" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="htWQr3QKB11t6zbesEdf-19" vertex="1">
+          <mxGeometry y="26" width="210" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="htWQr3QKB11t6zbesEdf-21" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="htWQr3QKB11t6zbesEdf-22" target="htWQr3QKB11t6zbesEdf-26" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="htWQr3QKB11t6zbesEdf-22" value="Floor Requested" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="-60" y="990" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="htWQr3QKB11t6zbesEdf-23" value="Moving" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=none;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="-370" y="1170" width="225" height="66" as="geometry" />
+        </mxCell>
+        <mxCell id="htWQr3QKB11t6zbesEdf-24" value="Entry / Floor Request is being executed&lt;br&gt;Exit / Elevator Arrives" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="htWQr3QKB11t6zbesEdf-23" vertex="1">
+          <mxGeometry y="26" width="225" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="htWQr3QKB11t6zbesEdf-25" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="htWQr3QKB11t6zbesEdf-26" target="htWQr3QKB11t6zbesEdf-23" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="htWQr3QKB11t6zbesEdf-26" value="Motor Moves Elevator" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="-60" y="1086" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="htWQr3QKB11t6zbesEdf-27" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="htWQr3QKB11t6zbesEdf-28" target="htWQr3QKB11t6zbesEdf-29" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="htWQr3QKB11t6zbesEdf-28" value="Elevator Arrives" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="-40" y="1236" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="htWQr3QKB11t6zbesEdf-29" value="Door Open" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="-210" y="1320" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="htWQr3QKB11t6zbesEdf-31" value="Unloading / Loading (STOPPED)" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=none;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="10" y="1360" width="465" height="86" as="geometry" />
+        </mxCell>
+        <mxCell id="htWQr3QKB11t6zbesEdf-32" value="Entry / Floor Request has been successfuly made,&lt;br style=&quot;border-color: var(--border-color);&quot;&gt;&amp;nbsp;Elevator has arrived at destination &amp;amp; doors open&lt;br style=&quot;border-color: var(--border-color);&quot;&gt;Exit / Doors close" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="htWQr3QKB11t6zbesEdf-31" vertex="1">
+          <mxGeometry y="26" width="465" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="htWQr3QKB11t6zbesEdf-49" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" parent="1" source="htWQr3QKB11t6zbesEdf-33" target="htWQr3QKB11t6zbesEdf-1" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="-510" y="1500" />
+              <mxPoint x="-510" y="177" />
+              <mxPoint x="-210" y="177" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="htWQr3QKB11t6zbesEdf-33" value="Door Closes" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="-170" y="1470" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="htWQr3QKB11t6zbesEdf-36" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="htWQr3QKB11t6zbesEdf-20" target="htWQr3QKB11t6zbesEdf-22" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="htWQr3QKB11t6zbesEdf-37" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" parent="1" source="htWQr3QKB11t6zbesEdf-23" target="htWQr3QKB11t6zbesEdf-28" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="htWQr3QKB11t6zbesEdf-38" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.001;entryY=0.463;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="htWQr3QKB11t6zbesEdf-29" target="htWQr3QKB11t6zbesEdf-32" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="htWQr3QKB11t6zbesEdf-39" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.75;entryDx=0;entryDy=0;" parent="1" source="htWQr3QKB11t6zbesEdf-32" target="htWQr3QKB11t6zbesEdf-33" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="220" y="1515" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="htWQr3QKB11t6zbesEdf-41" value="floorRequest()" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="60" y="170" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="htWQr3QKB11t6zbesEdf-42" value="parseRequests() chooseElevator()" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="140" y="330" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="htWQr3QKB11t6zbesEdf-43" value="Motor : move()" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="-5" y="380" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="htWQr3QKB11t6zbesEdf-44" value="elevator.getCurrentFloor() == floorNum" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="50" y="535" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="htWQr3QKB11t6zbesEdf-45" value="floorRequest()" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="-70" y="900" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="htWQr3QKB11t6zbesEdf-46" value="parseRequests()&lt;div&gt;chooseElevator()&lt;br&gt;&lt;/div&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="45" y="1056" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="htWQr3QKB11t6zbesEdf-47" value="Motor : move()" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="-190" y="1070" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="htWQr3QKB11t6zbesEdf-48" value="elevator.getCurrentFloor() == floorNum" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="-5" y="1206" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="htWQr3QKB11t6zbesEdf-52" value="Initialization" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=none;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="-170" y="20" width="210" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="htWQr3QKB11t6zbesEdf-53" value="Exit // Initializing Elevators" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="htWQr3QKB11t6zbesEdf-52" vertex="1">
+          <mxGeometry y="26" width="210" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="htWQr3QKB11t6zbesEdf-55" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.543;entryY=-0.019;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="htWQr3QKB11t6zbesEdf-53" target="htWQr3QKB11t6zbesEdf-1" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="htWQr3QKB11t6zbesEdf-56" value="&lt;div style=&quot;color: rgb(204, 204, 204); background-color: rgb(31, 31, 31); font-family: Consolas, &amp;quot;Courier New&amp;quot;, monospace; font-size: 14px; line-height: 19px;&quot;&gt;&lt;br&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="20" y="90" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="htWQr3QKB11t6zbesEdf-57" value="InitializeFloorAndElevators()" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="-210" y="80" width="105" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="zfVeeJ4_6bXh-RXef8P0-2" value="Running" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;" vertex="1" parent="1">
+          <mxGeometry x="-640" y="140" width="1165" height="1406" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
