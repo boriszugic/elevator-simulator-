@@ -1,5 +1,5 @@
-# SYSC3303 Project Iteration 1 - Documentation
-Date: February 3rd, 2024
+# SYSC3303 Project Iteration 3 - Documentation
+Date: March 16th, 2024
 
 # Authors
   - Boris Zugic,    101223924
@@ -28,17 +28,16 @@ intended to test the communication between subsystems.
 # Deliverables
   - Code necessary for program execution
     ButtonType.java, Door.java, Elevator.java, Door.java, ElevatorButton.java, ElevatorLamp.java,
-    Floor.java, Main.java, Motor.java, Scheduler.java
-  Performed by: Boris Zugic, Nitin Alagu, Evan Baldwin
+    Floor.java, Main.java, Motor.java, Scheduler.java, ElevatorStateMachine.java, ElevatorStructure.java
+  Performed by: Boris Zugic, Nitin Alagu, Evan Baldwin, Cole McPherson, Johnny Nguyen.
 
   - JUnit test cases
     ElevatorTests.java, FloorTests.java, MainTests.java, SchedulerTests.java
   Performed by: Evan Baldwin, Boris Zugic
 
-  - UML Class Diagram
-    SYSC3303_Iteration1_UML_Class.png, SYSC3303_Iteration1_UML_Class.drawio
-  Performed by: Cole McPherson
+  - UML Class Diagram + State Machine Diagrams
+    ElevatorStateMachineIteration3.drawio , SchedulerStateMachineIteration3.drawio,  SchedulerStateMachineIteration3.png, StateMachineDiagramElevatorIteration3.png, SYSC3303_Iteration2_UML_Class.drawio, 
+  Performed by: Cole McPherson, Nitin Alagu
 
   - UML Sequence Diagrams
-
-  Performed by: Johnny Nguyen
+  Performed by: Johnny Nguyen, Boris Zugic
