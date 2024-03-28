@@ -14,6 +14,8 @@ public class Scheduler implements Runnable{
     private static final Logger logger = new Logger(System.getProperty("user.home") + "/scheduler.log");
     @Getter
     private final int port = 64;
+
+    private final int elevator_port = 65;
     @Getter
     private final DatagramSocket socket;
     @Getter
@@ -164,7 +166,7 @@ public class Scheduler implements Runnable{
             ElevatorStructure elevator = chooseElevator((data[0] == 0 ? Direction.DOWN : Direction.UP), data[1]);
             // Assign floor the chosen elevator
             floors.get((int) data[1]).setElevatorPort(elevator.getPort());
-            return createElevatorPacket(data[1], elevator.getPort());
+            return createElevatorPacket(data[1], elevator.getId());
         }
         else if (packet.getLength() == 2) {
             //Floor request when passenger pressed elevator button
@@ -246,10 +248,13 @@ public class Scheduler implements Runnable{
      * @param floorNum  The floor number
      * @return The created DatagramPacket
      */
-    public DatagramPacket createElevatorPacket(int floorNum, int port){
+    public DatagramPacket createElevatorPacket(int floorNum, int ID){
         try {
-            return new DatagramPacket(new byte[]{(byte) floorNum}, 1,
-                                      InetAddress.getLocalHost(), port);
+            byte[] data = new byte[2];
+            data[0] = (byte) floorNum;
+            data[1] = (byte) ID;
+            return new DatagramPacket(data, data.length,
+                                      InetAddress.getLocalHost(), elevator_port);
         } catch (UnknownHostException e) {
             logger.error("Error creating elevator packet.");
             throw new RuntimeException("Error creating elevator packet.");
