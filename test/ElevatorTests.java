@@ -25,7 +25,7 @@ public class ElevatorTests {
      */
     @Before
     public void setUp(){
-        elevator = new Elevator(numFloors);
+//        elevator = new Elevator(numFloors);
         stateElevator = new ElevatorStructure(1, ElevatorStateEnum.IDLE, 1, 0);
     }
 

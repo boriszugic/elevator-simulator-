@@ -17,22 +17,21 @@ public class Elevator implements Runnable {
     private final Logger logger;
 
     // Static variables
-    private static int nextPortNum = 65;
+    private static int nextPortNum = 66;
     private static int nextId = 1;
+
+    @Getter
+    private final int port;
 
     // Instance variables
     @Getter
     private final int id;
     @Getter
-    private final int port;
-    @Getter
-    private DatagramSocket socket;
-    @Getter
     private Motor motor;
     @Getter
     private Door door;
     @Getter
-    private Display display;
+private Display display;
     @Getter
     private List<ElevatorButton> buttons = new ArrayList<>();
     @Getter
@@ -43,24 +42,23 @@ public class Elevator implements Runnable {
     @Getter
     private int destinationFloor;
     @Getter
-    private int numOfFloors;
-    @Getter
     private int numOfPassengers;
     @Getter
     private ElevatorStateEnum state;
+
+    private ArrayList<Integer> requested = new ArrayList<>();
+
+    private ElevatorSubsystem subsystem;
 
     static synchronized int getNextPortNum() {
         return nextPortNum++;
     }
 
-    private int getNextId() {
-        return nextId++;
-    }
-    public Elevator(int numFloors) {
-        this.id = getNextId();
-        this.logger = new Logger(System.getProperty("user.home") + "/elevator" + this.id + ".log");
-        this.port = getNextPortNum();
-        this.numOfFloors = numFloors;
+    public Elevator(ElevatorSubsystem subsystem, int ID) {
+        this.port = nextPortNum;
+        getNextPortNum();
+        this.subsystem = subsystem;
+        this.id = ID;
         motor = new Motor(this);
         door = new Door();
         display = new Display(this);
@@ -70,83 +68,41 @@ public class Elevator implements Runnable {
         numOfPassengers = 0;
         state = ElevatorStateEnum.IDLE; //elevator initialized to idle.
 
-        try {
-            this.socket = new DatagramSocket(port);
-        } catch (SocketException e) {
-            logger.error("Error creating DatagramSocket");
-            throw new RuntimeException("Error creating DatagramSocket", e);
-        }
-
-        for (int i = 0; i < numOfFloors; i++){
+        for (int i = 1; i <= subsystem.getNumFloors(); i++){
             buttons.add(new ElevatorButton(i));
             lamps.add(new ElevatorLamp(i));
         }
+        this.logger = new Logger(System.getProperty("user.home") + "/elevator" + ID + ".log");
     }
 
-    /**
-     * Main method to create Elevator objects and send their information to the scheduler.
-     * @param args Command line arguments: <num_of_elevators> <num_of_floors>
-     */
-    public static void main(String[] args) {
-        for (int i = 0; i < Integer.parseInt(args[0]); i++){
-            Elevator elevator = new Elevator(Integer.parseInt(args[1]));
-            saveElevatorInScheduler(elevator);
-            new Thread(elevator).start();
-        }
-        saveElevatorInScheduler(null);
-    }
-
-    /**
-     * Sends elevator information to the Scheduler.
-     * Format
-     * 1st byte: 0 if Idle, 1 if Moving
-     * 2nd byte: current floor
-     * 3rd byte: receiving socket port
-     *
-     * @param elevator The Elevator object containing the information to be sent.
-     */
-    private static void saveElevatorInScheduler(Elevator elevator) {
-        try {
-            // end of initialization stage
-            if (elevator == null) {
-                new DatagramSocket().send(new DatagramPacket(new byte[]{1}, 1,
-                                          InetAddress.getLocalHost(), SCHEDULER_PORT));
-            } else {
-                elevator.getSocket().send(new DatagramPacket(new byte[]{
-                                                             (byte) elevator.getId(),
-                                                             (byte) elevator.getCurrentFloor(),
-                                                             (byte) elevator.getPort()},
-                                                       3, InetAddress.getLocalHost(),
-                                                              SCHEDULER_PORT));
-            }
-        } catch(IOException e){
-            throw new RuntimeException(e);
+    public synchronized void pause(){
+        try{
+            this.wait();
+        }catch(Exception e){
+            e.printStackTrace();
         }
     }
 
     @Override
     public void run() {
-        while (true) {
-            DatagramPacket receivedPacket = new DatagramPacket(new byte[3], 3);
-            try {
-                socket.receive(receivedPacket);
-                parseRequest(receivedPacket);
-            } catch (IOException e) {
-                socket.close();
-                throw new RuntimeException(e);
+        while(true){
+            if(requested.isEmpty()){
+                pause();
             }
+            int floorNum = requested.removeFirst();
+            state = (this.currentFloor >= floorNum) ? ElevatorStateEnum.MOVING_DOWN : ElevatorStateEnum.MOVING_UP;
+            move(floorNum);
+            sendUpdate();
         }
     }
 
     /**
      * Parses received data and updates attributes accordingly
      */
-    private void parseRequest(DatagramPacket packet){
+    public synchronized void parseRequest(DatagramPacket packet){
         printPacketReceived(packet);
         int floorNum = packet.getData()[0];
-        //state.requestReceived();
-        state = (this.currentFloor >= floorNum) ? ElevatorStateEnum.MOVING_DOWN : ElevatorStateEnum.MOVING_UP;
-        move(floorNum);
+        requested.add(floorNum);
     }
 
     /**
@@ -159,7 +115,6 @@ public class Elevator implements Runnable {
         motor.move(floorNum);
         door.open();
         state = ElevatorStateEnum.LOADING_UNLOADING;
-        sendUpdate();
     }
 
     /**
@@ -167,11 +122,7 @@ public class Elevator implements Runnable {
      * This method creates a packet with the specified update type and sends it through the socket.
      */
     private void sendUpdate() {
-        try {
-            socket.send(createPacket(UpdateType.OPEN_DOORS));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        subsystem.sendSchedulerPacket(createPacket(UpdateType.OPEN_DOORS));
     }
 
     /**

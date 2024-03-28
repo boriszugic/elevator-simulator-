@@ -25,16 +25,21 @@ public class FloorSubsystem {
      * @param args Command line arguments: <input_file> <num_of_floors>
      */
     public static void main(String[] args) {
-        if (args.length < 1) {
-            System.err.println("Usage: java FloorSubsystem <input_file> <num_of_floors>");
-            System.exit(1);
+        ConfigurationReader config;
+        try {
+            config = new ConfigurationReader("./config.json");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (org.json.simple.parser.ParseException e) {
+            throw new RuntimeException(e);
         }
 
-        for (int i = 0; i < Integer.parseInt(args[1]); i++){
+        String inputFile = config.getInputFile();
+
+        for (int i = 0; i < config.getNumFloors(); i++){
             dataArray.add(new LinkedList<>());
         }
 
-        String inputFile = args[0];
         try {
             BufferedReader reader = new BufferedReader(new FileReader(inputFile));
             String line;
@@ -49,7 +54,7 @@ public class FloorSubsystem {
             }
 
             // store info of each floor in scheduler
-            for (int i = 0; i < Integer.parseInt(args[1]); i++){
+            for (int i = 0; i < config.getNumFloors(); i++){
                 Floor floor = new Floor();
                 saveFloorInScheduler(floor);
                 floors.add(floor);
