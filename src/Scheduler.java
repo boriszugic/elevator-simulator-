@@ -22,11 +22,14 @@ public class Scheduler implements Runnable{
     private HashMap<Integer, FloorStructure> floors;
     @Getter
     private HashMap<Integer, ElevatorStructure> elevators;
+    @Getter
+    private SchedulerStateEnum state;
 
     /**
      * Private constructor to prevent instantiation from outside the class.
      */
     private Scheduler() {
+        state = SchedulerStateEnum.IDLE; //Initialize scheduler in IDLE state
         try {
             this.socket = new DatagramSocket(port);
             this.elevators = new HashMap<>();
@@ -154,6 +157,7 @@ public class Scheduler implements Runnable{
      */
     private DatagramPacket parseRequest(DatagramPacket packet){
         byte[] data = packet.getData();
+        state = SchedulerStateEnum.SCHEDULING;
         if (packet.getLength() == 3 && data[2] == 0){ // Elevator response
             byte[] updateData = new byte[]{data[0]};
             printPacketReceived(packet,"Elevator");
@@ -285,6 +289,7 @@ public class Scheduler implements Runnable{
      * @param packet The packet to be sent
      */
     private void sendRequest(DatagramPacket packet){
+        state = SchedulerStateEnum.IDLE;
         try {
             printPacketRequest(packet);
             socket.send(packet);
