@@ -15,17 +15,21 @@ public class ElevatorSubsystem implements Runnable{
     private static final int SCHEDULER_PORT = 64;
 
     private static final int port = 65;
+    @Getter
     private HashMap<Integer, Elevator> elevators;
     private Thread requestThread;
     @Getter
     private static DatagramSocket socket;
     private final Logger logger;
+    @Getter
+    private final ConfigurationReader config;
 
     @Getter
     private int numFloors;
     public ElevatorSubsystem(ConfigurationReader config){
         Elevator elevator;
         Thread temp;
+        this.config = config;
         this.numFloors = config.getNumFloors();
         elevators = new HashMap<>();
         this.logger = new Logger(System.getProperty("user.home") + "/elevator_subsystem.log");
@@ -37,13 +41,15 @@ public class ElevatorSubsystem implements Runnable{
             throw new RuntimeException("Error creating DatagramSocket", e);
         }
 
-        for (int i = 1; i <= numFloors; i++){
+        for (int i = 1; i <= config.numElevators; i++){
             elevator = new Elevator(this, i);  //Establish new elevator with appropriate ID
+            System.out.println(i);
             saveElevatorInScheduler(elevator);
             elevators.put(i, elevator);
             temp = new Thread(elevator, "elevator" + i);
             temp.start();
         }
+        saveElevatorInScheduler(null);
     }
 
     /**

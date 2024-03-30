@@ -59,7 +59,7 @@ private Display display;
         getNextPortNum();
         this.subsystem = subsystem;
         this.id = ID;
-        motor = new Motor(this);
+        motor = new Motor(this, subsystem.getConfig());
         door = new Door();
         display = new Display(this);
         currentFloor = 1;

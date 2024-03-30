@@ -7,14 +7,16 @@ import java.util.concurrent.TimeUnit;
  */
 public class Motor {
     private Elevator elevator;
+    private ConfigurationReader config;
 
     /**
      * Constructs a Motor object with the specified elevator.
      *
      * @param e The elevator associated with this motor
      */
-    public Motor(Elevator e) {
+    public Motor(Elevator e, ConfigurationReader config) {
         elevator = e;
+        this.config = config;
     }
 
     /**
@@ -23,6 +25,10 @@ public class Motor {
      * @param floorNum The target floor number
      */
     public void move(int floorNum) {
+        if (config.getNumFloors() < floorNum){
+            return;
+        }
+
         if (elevator.getCurrentFloor() == floorNum){
             //elevator.getDisplay().display(elevator.getCurrentFloor());
             return;
@@ -30,7 +36,7 @@ public class Motor {
 
         while (elevator.getCurrentFloor() != floorNum) {
             try {
-                TimeUnit.SECONDS.sleep(2);
+                TimeUnit.MILLISECONDS.sleep(config.getMovingTime());
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }

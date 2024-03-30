@@ -14,7 +14,6 @@ public class Scheduler implements Runnable{
     private static final Logger logger = new Logger(System.getProperty("user.home") + "/scheduler.log");
     @Getter
     private final int port = 64;
-
     private final int elevator_port = 65;
     @Getter
     private final DatagramSocket socket;
@@ -38,6 +37,16 @@ public class Scheduler implements Runnable{
             logger.error("Error creating DatagramSocket");
             throw new RuntimeException("Error creating DatagramSocket", e);
         }
+    }
+
+    /**
+     * Private constructor to prevent instantiation from outside the class.
+     */
+    public Scheduler(String test) {
+        state = SchedulerStateEnum.IDLE; //Initialize scheduler in IDLE state
+        socket = null;
+        this.elevators = new HashMap<>();
+        this.floors = new HashMap<>();
     }
 
     /** Singleton instance */
@@ -155,7 +164,7 @@ public class Scheduler implements Runnable{
      * @param packet The DatagramPacket to be parsed
      * @return The appropriate DatagramPacket to be sent
      */
-    private DatagramPacket parseRequest(DatagramPacket packet){
+    public DatagramPacket parseRequest(DatagramPacket packet){
         byte[] data = packet.getData();
         state = SchedulerStateEnum.SCHEDULING;
         if (packet.getLength() == 3 && data[2] == 0){ // Elevator response
@@ -169,7 +178,7 @@ public class Scheduler implements Runnable{
             // Choose elevator
             ElevatorStructure elevator = chooseElevator((data[0] == 0 ? Direction.DOWN : Direction.UP), data[1]);
             // Assign floor the chosen elevator
-            floors.get((int) data[1]).setElevatorPort(elevator.getPort());
+            floors.get((int) data[1]).setElevatorID(elevator.getPort());
             return createElevatorPacket(data[1], elevator.getId());
         }
         else if (packet.getLength() == 2) {
@@ -178,8 +187,8 @@ public class Scheduler implements Runnable{
             int floorNum = data[0];
             if (floorNum <= floors.size()) {
                 // Create a packet to elevator port assigned to floor in the if statement above
-                DatagramPacket returnPacket = createElevatorPacket(floorNum, floors.get((int)data[1]).getElevatorPort());
-                elevators.get(floors.get((int)data[1]).getElevatorPort()).setState(ElevatorStateEnum.IDLE);
+                DatagramPacket returnPacket = createElevatorPacket(floorNum, floors.get((int)data[1]).getElevatorID());
+                elevators.get(floors.get((int)data[1]).getElevatorID()).setState(ElevatorStateEnum.IDLE);
                 return returnPacket;
             }
         }
@@ -296,6 +305,18 @@ public class Scheduler implements Runnable{
         } catch (IOException e) {
             logger.error("Caught an exception trying to send packet.");
             throw new RuntimeException("Caught an exception trying to send packet.");
+        }
+    }
+
+    /**
+     * Attempts to close the current socket utilized
+     * by the scheduler.
+     */
+    public void close(){
+        try{
+            socket.close();
+        } catch(Exception e){
+            e.printStackTrace();
         }
     }
 
