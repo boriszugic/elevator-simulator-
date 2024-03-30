@@ -30,12 +30,13 @@ public class Motor {
 
         while (elevator.getCurrentFloor() != floorNum) {
             try {
-                TimeUnit.SECONDS.sleep(2);
+                TimeUnit.SECONDS.sleep(1);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
             elevator.setCurrentFloor(elevator.getCurrentFloor() +
                     (floorNum - elevator.getCurrentFloor() > 0 ? 1 : -1));
+            System.out.println("[port:"+elevator.getPort()+"] Floor: "+elevator.getCurrentFloor());
             elevator.getDisplay().display(String.valueOf(elevator.getCurrentFloor()));
         }
         //elevator.getState().Arrival();

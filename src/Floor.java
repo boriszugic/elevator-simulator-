@@ -7,6 +7,7 @@ import java.net.*;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.LinkedList;
+import java.util.concurrent.TimeUnit;
 
 public class Floor implements Runnable {
     private static int nextFloorNum = 1;
@@ -42,7 +43,6 @@ public class Floor implements Runnable {
 
     @Override
     public void run() {
-
         LinkedList<RequestData> requests = FloorSubsystem.getRequests(this.getFloorNum());
 
         Calendar currentTime = Calendar.getInstance();
@@ -52,9 +52,15 @@ public class Floor implements Runnable {
             while(request.getTime().compareTo(currentTime.getTime()) != 0){
                 currentTime = Calendar.getInstance();
             }
+            System.out.println("Printing request information...");
             printRequestInfo(request);
             sendRequest(request.getDirection(), this.floorNum, id);
             waitRequest();
+            try{
+                TimeUnit.SECONDS.sleep(1);
+            } catch (InterruptedException e){
+                e.printStackTrace();
+            }
         }
     }
 
@@ -176,6 +182,7 @@ public class Floor implements Runnable {
      * @param request  RequestData instance containing packet request information
      */
     public void printRequestInfo(RequestData request) {
+        System.out.println(request.toString());
         logger.debug("---------- SEND ----------");
         logger.debug(request.toString());
         logger.debug("--------------------------");
