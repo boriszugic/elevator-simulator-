@@ -1,4 +1,4 @@
-# SYSC3303 Project Iteration 3 - Documentation
+# SYSC3303 Project Iteration 4 - Documentation
 Date: March 17th, 2024
 
 # Authors
@@ -11,8 +11,7 @@ Date: March 17th, 2024
 # Description
 This assignment simulates an elevator system with a floor subsystem, a series of elevators, and a scheduler to determine
 the operation of the elevators based on the input from floors. This iteration utilizes synchronized threads which communicate
-between each other to parse a data input from the floor system. The current design does not utilize the scheduler to determine
-the usage of elevators, but rather the floors and elevators communicate through the scheduler. 
+between each other to parse a data input from the floor system. 
 
 This iteration has implemented UDP elements for effective communication between the three subsystems. State machines have
 been included in the code for both the Elevator and Scheduler which simulate the attached UML State Machine diagrams.
@@ -25,22 +24,57 @@ file which can be modified to test as desired.
 
 # Issues/Limitations
 1. Can run a maximum of 64 floors and 63 elevators.
-2. There is currently a small bug involving the scheduler handling simultaneous requests from multiple floors
-which will be fixed in the next iteration. 
 
-# Deliverables
-  - Code necessary for program execution
-    ButtonType.java, Door.java, Elevator.java, Door.java, ElevatorButton.java, ElevatorLamp.java,
-    Floor.java, Main.java, Motor.java, Scheduler.java, ElevatorStateMachine.java, ElevatorStructure.java
-  Performed by: Boris Zugic, Nitin Alagu, Evan Baldwin, Cole McPherson, Johnny Nguyen.
+# Responsibilities
 
-  - JUnit test cases
-    ElevatorTests.java, FloorTests.java, MainTests.java, SchedulerTests.java
-  Performed by: Evan Baldwin, Boris Zugic
+- Iteration 1:
+    - UML Class and Sequence Diagrams:
+      - Cole McPherson: UML Class Diagram
+      - Johnny Nguyen: Sequence Diagram
+    - Coding:
+      - Boris Zugic: Elevator, Floor, Main, ButtonType, Door, Motor, Scheduler
+      - Cole McPherson:
+      - Johnny Nguyen:
+      - Nitin Alagu:
+      - Evan Baldwin: Elevator movement, documentation
+    - Unit Testing:
+      - Evan Baldwin: Elevator, Scheduler, Floor Tests
+      - Boris Zugic: Elevator, Floor Tests
 
-  - UML Class Diagram + State Machine Diagrams
-    ElevatorStateMachineIteration3.drawio , SchedulerStateMachineIteration3.drawio,  SchedulerStateMachineIteration3.png, StateMachineDiagramElevatorIteration3.png, SYSC3303_Iteration2_UML_Class.drawio, 
-  Performed by: Cole McPherson, Nitin Alagu, Evan Baldwin
+- Iteration 2:
+    - UML Class and Sequence Diagrams:
+      - 
+    - Coding:
+      - Boris Zugic: UDP Communication (Elevator/Scheduler/Floor), Display
+      - Cole McPherson: Elevator State Machine (ElevatorState, ElevatorStateMachine, etc)
+      - Johnny Nguyen: Scheduler 
+      - Nitin Alagu:
+      - Evan Baldwin: 
+    - Unit Testing:
+      - Evan Baldwin: Updated UDP, Elevator, Scheduler, Floor Tests
+    
+- Iteration 3:
+    - UML Class and Sequence Diagrams:
+      - Cole McPherson: Elevator/Scheduler State Diagrams
+      - Evan Baldwin: Updated Elevator/Scheduler State Diagrams, UML Class Diagram
+    - Coding:
+      - Boris Zugic: GUI, Logger, Input file
+      - Cole McPherson: 
+      - Johnny Nguyen: Scheduler, UDP Communication
+      - Nitin Alagu:
+      - Evan Baldwin: Scheduler State Machine (SchedulerState, StateStateMachine, etc)
+    - Unit Testing:
+      - No major changes
 
-  - UML Sequence Diagrams
-  Performed by: Johnny Nguyen, Boris Zugic
+- Iteration 4:
+    - UML Class and Sequence Diagrams:
+      - 
+    - Coding:
+      - Boris Zugic: Elevator Selection Algorithm
+      - Cole McPherson: UDP Communication, Scheduler 
+      - Johnny Nguyen: Scheduler Communication/Logic, Parsing
+      - Nitin Alagu:
+      - Evan Baldwin: Elevator threading/subsystem, UDP Communication, Error injection/elevator response
+    - Unit Testing:
+      - Evan Baldwin: Updated Elevator tests, new Scheduler tests
+

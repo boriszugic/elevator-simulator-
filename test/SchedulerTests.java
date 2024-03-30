@@ -1,10 +1,14 @@
 package test;
 
+import org.json.simple.parser.ParseException;
 import org.junit.Before;
 import org.junit.Test;
 import src.*;
 
+import java.io.IOException;
 import java.net.DatagramPacket;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import static org.junit.Assert.*;
 
@@ -14,6 +18,16 @@ import static org.junit.Assert.*;
  */
 public class SchedulerTests {
     Scheduler scheduler;
+    static ConfigurationReader config;
+    static {
+        try {
+            config = new ConfigurationReader("./testconfig.json");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+    }
     private final int numFloors = 3;
     ArrayList<Object> testparam = new ArrayList<>();
     /**
@@ -22,8 +36,13 @@ public class SchedulerTests {
      */
     @Before
     public void setUp(){
-        String[] args = null;
-        Scheduler.main(args);
+        scheduler = new Scheduler("test");
+        for (int i = 1; i <= config.numElevators; i++){
+            scheduler.addElevator(new ElevatorStructure(i, ElevatorStateEnum.IDLE, 1, 1));
+        }
+        for (int i = 1; i <= config.numFloors; i++){
+            scheduler.addFloor(new FloorStructure(i, i));
+        }
     }
 
     /**
@@ -32,46 +51,17 @@ public class SchedulerTests {
      */
     @Test
     public void testInit(){
-        assertEquals(scheduler.getElevators(), testparam);
-        assertEquals(scheduler.getFloors(), testparam);
+        assertNotEquals(null, scheduler.getElevators());
+        assertNotEquals(null, scheduler.getFloors());
     }
 
-    /**
-     * This method tests whether the scheduler class can successfully
-     * add and access elevators.
-     */
-   /*
-    @Test
-    public void addElevators(){
-        Elevator testElevator = new Elevator(numFloors);
-        scheduler.addElevator(testElevator);
-        testparam.add(testElevator);
-        assertEquals(scheduler.getElevators(), testparam);
-    }
-*/
-    /**
-     * This method tests whether the scheduler class can successfully
-     * add and access floors.
-     */
-    /*
-    @Test
-    public void addFloors(){
-        Floor testFloor = new Floor();
-        scheduler.addFloor(testFloor);
-        testparam.add(testFloor);
-        assertEquals(scheduler.getFloors(), testparam);
-    }
-
-    /**
-     * This method testes whether the Scheduler class is capable
-     * of creating a packet to send to another class.
-     */
     @Test
     public void testCreatePacket(){
-        DatagramPacket data1 = scheduler.createElevatorPacket(numFloors, 64);
+        DatagramPacket data1 = scheduler.createElevatorPacket(numFloors, 1, 0);
         assertNotNull(data1);
+        assertEquals((byte) 1, data1.getData()[1]);
         byte[] temp = new byte[]{0};
-        DatagramPacket data2 = scheduler.createFloorPacket(temp, 64);
+        DatagramPacket data2 = scheduler.createFloorPacket(temp, 2);
         assertNotNull(data2);
     }
 
@@ -80,8 +70,29 @@ public class SchedulerTests {
      * of parsing a packet and retrieving necessary information.
      */
     @Test
-    public void testParse(){
-        byte[] test = new byte[]{0000};
+    public void testParse() throws UnknownHostException {
+        byte[] testdata = new byte[3];
+        testdata[0] = (byte) 1;
+        DatagramPacket testpacket = new DatagramPacket(testdata, testdata.length, InetAddress.getLocalHost(), 64);
+        DatagramPacket sample = scheduler.parseRequest(testpacket);
+        assertNotNull(sample);
+        assertEquals(1, sample.getLength());
+        testdata = new byte[4];
+        testdata[1] = (byte) 1;
+        testdata[2] = (byte) 1;
+        testpacket = new DatagramPacket(testdata, testdata.length, InetAddress.getLocalHost(), 64);
+        sample = scheduler.parseRequest(testpacket);
+        assertNotNull(sample);
+        assertEquals(3, sample.getLength());
+    }
+
+    /**
+     * This method tests whether the scheduler can determine the
+     * validity of a packet's contents.
+     */
+    @Test
+    public void testValid(){
+        byte[] test = new byte[4];
         assertTrue(scheduler.isValid(test));
     }
 }

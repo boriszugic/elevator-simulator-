@@ -8,27 +8,50 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.LinkedList;
 
+/**
+ * Class representing a floor which implements a Thread and socket
+ * for each floor, with the corresponding id/numbers and which checks
+ * for inputs for a given file.
+ */
 public class Floor implements Runnable {
+    //Static variables used to assign floor number/id
     private static int nextFloorNum = 1;
     private static int nextId= 1;
+    //Debug logger which tracks floor activity
     private final Logger logger;
+    //Constant utilized for scheduler port
     private final int SCHEDULER_PORT = 64;
+    //Instance variables
     @Getter
     private final int id;
     @Getter
     private final int floorNum;
     private int destFloor;
+    //UDP elements utilized for communication
     @Getter
     DatagramSocket socket;
     DatagramPacket receivePacket;
+
+    /**
+     * Returns the next utilized floor number for each floor.
+     * @return Next floor number.
+     */
     static synchronized int getNextFloorNum() {
         return nextFloorNum++;
     }
 
+    /**
+     * Returns the next utilized ID number for each floor.
+     * @return Next ID number.
+     */
     static synchronized int getNextId() {
         return nextId++;
     }
 
+    /**
+     * Constructor for floor instance which creates a new ID and floor number depending on
+     * the previous amount allocated, and a socket/logger for communication/debugging.
+     */
     public Floor() {
         this.id = getNextId();
         this.logger = new Logger(System.getProperty("user.home") + "/floor" + this.id + ".log");
@@ -40,6 +63,13 @@ public class Floor implements Runnable {
         }
     }
 
+    /**
+     * Interface Runnable method which assigns a linked list for requests and
+     * checks for input requests from the subsystem while there are requests present.
+     *
+     * It then checks this information compared to the current time and sends the request
+     * when it is the given input time.
+     */
     @Override
     public void run() {
 
@@ -49,11 +79,12 @@ public class Floor implements Runnable {
         while (!requests.isEmpty()) {
             RequestData request = requests.poll();
             this.destFloor = request.getRequestFloor();
+            //Check current time compared to input time
             while(request.getTime().compareTo(currentTime.getTime()) != 0){
                 currentTime = Calendar.getInstance();
             }
             printRequestInfo(request);
-            sendRequest(request.getDirection(), this.floorNum, id);
+            sendRequest(request.getDirection(), this.floorNum, id, request.getError());
             waitRequest();
         }
     }
@@ -65,8 +96,8 @@ public class Floor implements Runnable {
      * @param floorNum   The floor number
      * @param port       The port number
      */
-    private void sendRequest(Direction buttonType, int floorNum, int port) {
-        DatagramPacket packet = createPacket(buttonType, floorNum, port);
+    private void sendRequest(Direction buttonType, int floorNum, int port, int error) {
+        DatagramPacket packet = createPacket(buttonType, floorNum, port, error);
         try {
             socket.send(packet);
         } catch (IOException e) {
@@ -85,11 +116,12 @@ public class Floor implements Runnable {
      * @param port       The port number
      * @return DatagramPacket to be sent
      */
-    public DatagramPacket createPacket(Direction buttonType, int floorNum, int port) {
-        byte[] data = new byte[3];
+    public DatagramPacket createPacket(Direction buttonType, int floorNum, int port, int error) {
+        byte[] data = new byte[4];
         data[0] = (byte) ((buttonType == Direction.UP) ? 1 : 0);
         data[1] = (byte) floorNum;
         data[2] = (byte) port;
+        data[3] = (byte) error;
         try {
             return new DatagramPacket(data, data.length, InetAddress.getLocalHost(), SCHEDULER_PORT);
         } catch (UnknownHostException e) {
