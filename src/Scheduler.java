@@ -40,7 +40,8 @@ public class Scheduler implements Runnable{
     }
 
     /**
-     * Private constructor to prevent instantiation from outside the class.
+     * Test constructor which does not initialize UDP elements; to be utilized in
+     * SchedulerTests.Java for JUnit4 testing
      */
     public Scheduler(String test) {
         state = SchedulerStateEnum.IDLE; //Initialize scheduler in IDLE state
@@ -52,6 +53,12 @@ public class Scheduler implements Runnable{
     /** Singleton instance */
     private static final Scheduler instance = new Scheduler();
 
+    /**
+     * Main executable function which initializes all floors/elevators before starting
+     * a scheduler thread.
+     *
+     * @param args Default parameter
+     */
     public static void main(String[] args){
         Scheduler scheduler = Scheduler.getInstance();
         initializeFloorsAndElevators();
@@ -67,7 +74,9 @@ public class Scheduler implements Runnable{
     }
 
     /**
-     * Initializes floors and elevators
+     * Initializes all floors and elevators by constantly checking socket and
+     * receives information to create simple structures with information necessary
+     * to model each elevator and floor instance.
      */
     private static void initializeFloorsAndElevators() {
         //ElevatorStateMachine elevatorStateMachine = new ElevatorStateMachine();
@@ -149,7 +158,7 @@ public class Scheduler implements Runnable{
      * Waits for a request from Floor and Elevator threads.
      */
     private DatagramPacket waitRequest() {
-        DatagramPacket receivedPacket = new DatagramPacket(new byte[3], 3);
+        DatagramPacket receivedPacket = new DatagramPacket(new byte[4], 4);
         try {
             socket.receive(receivedPacket);
             return receivedPacket;
@@ -233,7 +242,6 @@ public class Scheduler implements Runnable{
      * @return false if any of the conditions are triggered, true otherwise
      */
     public boolean isValid(byte[] data) {
-
         if (data.length != 4) { //Checks for sufficient length of data
             return false;
         }
@@ -275,6 +283,15 @@ public class Scheduler implements Runnable{
         return suitableElevator.get(); // Return the found elevator
     }
 
+    /**
+     * Takes a given ElevatorStructure along with several parameters and determines if
+     * an elevator is suitable for use based on those parameters.
+     *
+     * @param elevator The given instance of an elevator
+     * @param direction The direction of the request
+     * @param floorNum The floor number of the request
+     * @return True if elevator is suitable, false otherwise
+     */
     private boolean isElevatorSuitable(ElevatorStructure elevator, Direction direction, int floorNum) {
         switch (elevator.getState()) {
             case IDLE:

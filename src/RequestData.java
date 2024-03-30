@@ -30,6 +30,12 @@ public class RequestData {
         this.error = error;
     }
 
+    /**
+     * Overrides default toString() method and returns a String representation
+     * of the contained request data.
+     *
+     * @return String representation of request data
+     */
     @Override
     public String toString() {
         return " | " + time + " | " + currentFloor + " | " + direction + " | " + requestFloor + " | " + error + " | ";

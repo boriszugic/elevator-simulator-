@@ -106,7 +106,9 @@ public class Elevator implements Runnable {
     }
 
     /**
-     *
+     * Interface Runnable method which executes upon start of thread.
+     * Runs forever and checks for requests added to the queue, then
+     * updated elevator state accordingly.
      */
     @Override
     public void run() {
@@ -129,6 +131,7 @@ public class Elevator implements Runnable {
         printPacketReceived(packet);
         int floorNum = packet.getData()[0];
         requested.add(floorNum);
+        lamps.get(floorNum).turnOn();
         if(currentFloor!=floorNum){requested.add(floorNum);}
 
         /**Request sorting algorithm --incomplete **/
@@ -168,6 +171,7 @@ public class Elevator implements Runnable {
         logger.debug("Opening door of elevator:" + id);
         door.open();
         state = ElevatorStateEnum.LOADING_UNLOADING;
+        lamps.get(floorNum).turnOff();
     }
 
     /**
