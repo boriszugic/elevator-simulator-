@@ -53,7 +53,7 @@ public class Floor implements Runnable {
                 currentTime = Calendar.getInstance();
             }
             printRequestInfo(request);
-            sendRequest(request.getDirection(), this.floorNum, id);
+            sendRequest(request.getDirection(), this.floorNum, id, request.getError());
             waitRequest();
         }
     }
@@ -65,8 +65,8 @@ public class Floor implements Runnable {
      * @param floorNum   The floor number
      * @param port       The port number
      */
-    private void sendRequest(Direction buttonType, int floorNum, int port) {
-        DatagramPacket packet = createPacket(buttonType, floorNum, port);
+    private void sendRequest(Direction buttonType, int floorNum, int port, int error) {
+        DatagramPacket packet = createPacket(buttonType, floorNum, port, error);
         try {
             socket.send(packet);
         } catch (IOException e) {
@@ -85,11 +85,12 @@ public class Floor implements Runnable {
      * @param port       The port number
      * @return DatagramPacket to be sent
      */
-    public DatagramPacket createPacket(Direction buttonType, int floorNum, int port) {
-        byte[] data = new byte[3];
+    public DatagramPacket createPacket(Direction buttonType, int floorNum, int port, int error) {
+        byte[] data = new byte[4];
         data[0] = (byte) ((buttonType == Direction.UP) ? 1 : 0);
         data[1] = (byte) floorNum;
         data[2] = (byte) port;
+        data[3] = (byte) error;
         try {
             return new DatagramPacket(data, data.length, InetAddress.getLocalHost(), SCHEDULER_PORT);
         } catch (UnknownHostException e) {

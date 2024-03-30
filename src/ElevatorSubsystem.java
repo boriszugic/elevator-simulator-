@@ -43,7 +43,6 @@ public class ElevatorSubsystem implements Runnable{
 
         for (int i = 1; i <= config.numElevators; i++){
             elevator = new Elevator(this, i);  //Establish new elevator with appropriate ID
-            System.out.println(i);
             saveElevatorInScheduler(elevator);
             elevators.put(i, elevator);
             temp = new Thread(elevator, "elevator" + i);
@@ -82,15 +81,13 @@ public class ElevatorSubsystem implements Runnable{
 
     public void receiveRequest() throws IOException{
         DatagramPacket receivedPacket = new DatagramPacket(new byte[3], 3);
-        Thread tempThread;
         try {
             socket.receive(receivedPacket);
         } catch (IOException e) {
             socket.close();
             throw new RuntimeException(e);
         }
-        tempThread = new Thread(() -> sendElevatorPacket(receivedPacket));
-        tempThread.start();
+        sendElevatorPacket(receivedPacket);
     }
 
     public synchronized void sendElevatorPacket(DatagramPacket received){
@@ -98,7 +95,7 @@ public class ElevatorSubsystem implements Runnable{
         Elevator elevator;
 
         ID = received.getData()[1];
-        elevator = elevators.get(ID);
+        elevator = elevators.get(ID-65);
         elevator.parseRequest(received);
     }
 

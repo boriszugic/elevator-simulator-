@@ -12,6 +12,7 @@ public class RequestData {
     private int currentFloor;
     private Date time;
     private int requestFloor;
+    private int error;
 
     /**
      * Constructs a RequestData object with the specified parameters.
@@ -21,15 +22,16 @@ public class RequestData {
      * @param direction     The direction in which the elevator is requested to move (Up or Down)
      * @param requestFloor  The destination floor
      */
-    public RequestData(Date time, int currentFloor, Direction direction, int requestFloor) {
+    public RequestData(Date time, int currentFloor, Direction direction, int requestFloor, int error) {
         this.time = time;
         this.currentFloor = currentFloor;
         this.direction = direction;
         this.requestFloor = requestFloor;
+        this.error = error;
     }
 
     @Override
     public String toString() {
-        return " | " + time + " | " + currentFloor + " | " + direction + " | ";
+        return " | " + time + " | " + currentFloor + " | " + direction + " | " + requestFloor + " | " + error + " | ";
     }
 }

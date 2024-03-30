@@ -36,7 +36,7 @@ public class FloorSubsystem {
 
         String inputFile = config.getInputFile();
 
-        for (int i = 0; i < config.getNumFloors(); i++){
+        for (int i = 1; i <= config.getNumFloors(); i++){
             dataArray.add(new LinkedList<>());
         }
 
@@ -46,7 +46,7 @@ public class FloorSubsystem {
 
             while ((line = reader.readLine()) != null) {
                 String[] parts = line.split("\\s+");
-                if (parts.length == 4) {
+                if (parts.length == 5) {
                     processInput(parts);
                 } else {
                     System.err.println("Invalid input format: " + line);
@@ -99,8 +99,9 @@ public class FloorSubsystem {
 
         int floorNum = Integer.parseInt(parts[1]);
         int destFloorNum = Integer.parseInt(parts[3]);
+        int error = Integer.parseInt(parts[4]);
         dataArray.get(floorNum - 1).add(new RequestData(currentDate.getTime(), floorNum,
-                (parts[2].equals("Up")) ? Direction.UP : Direction.DOWN, destFloorNum));
+                (parts[2].equals("Up")) ? Direction.UP : Direction.DOWN, destFloorNum, error));
     }
 
     /**

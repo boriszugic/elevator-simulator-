@@ -57,7 +57,7 @@ public class SchedulerTests {
 
     @Test
     public void testCreatePacket(){
-        DatagramPacket data1 = scheduler.createElevatorPacket(numFloors, 1);
+        DatagramPacket data1 = scheduler.createElevatorPacket(numFloors, 1, 0);
         assertNotNull(data1);
         assertEquals((byte) 1, data1.getData()[1]);
         byte[] temp = new byte[]{0};
@@ -77,12 +77,13 @@ public class SchedulerTests {
         DatagramPacket sample = scheduler.parseRequest(testpacket);
         assertNotNull(sample);
         assertEquals(1, sample.getLength());
+        testdata = new byte[4];
         testdata[1] = (byte) 1;
         testdata[2] = (byte) 1;
         testpacket = new DatagramPacket(testdata, testdata.length, InetAddress.getLocalHost(), 64);
         sample = scheduler.parseRequest(testpacket);
         assertNotNull(sample);
-        assertEquals(2, sample.getLength());
+        assertEquals(3, sample.getLength());
     }
 
     /**
@@ -91,7 +92,7 @@ public class SchedulerTests {
      */
     @Test
     public void testValid(){
-        byte[] test = new byte[3];
+        byte[] test = new byte[4];
         assertTrue(scheduler.isValid(test));
     }
 }

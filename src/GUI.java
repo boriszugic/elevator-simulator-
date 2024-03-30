@@ -14,9 +14,10 @@ public class GUI {
     private void createAndShowGUI(int id, int port) {
         frame = new JFrame("Elevator " + id + " port " + port);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setLocationRelativeTo(null);
         label = new JLabel(""); // Initialize the label with default text
         frame.getContentPane().add(label); // Add label to frame
-        frame.setSize(50, 50);
+        frame.setSize(200, 200);
     }
 
     // Instance method to display a message

@@ -28,7 +28,6 @@ public class Motor {
         if (config.getNumFloors() < floorNum){
             return;
         }
-
         if (elevator.getCurrentFloor() == floorNum){
             //elevator.getDisplay().display(elevator.getCurrentFloor());
             return;

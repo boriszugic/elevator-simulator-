@@ -67,7 +67,7 @@ public class ElevatorTests {
         assertEquals(2, elevator.getCurrentFloor());
         elevator.move(3);
         assertEquals(3, elevator.getCurrentFloor());
-        elevator.move(4);
+        elevator.move(25);
         assertEquals(3, elevator.getCurrentFloor());
     }
 

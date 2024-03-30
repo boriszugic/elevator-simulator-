@@ -15,7 +15,7 @@ public class FloorStructure {
     private int port;
     @Getter
     @Setter
-    private int elevatorID;
+    private int elevatorPort;
 
     public FloorStructure(int floorNum, int port) {
         this.floorNum = floorNum;
