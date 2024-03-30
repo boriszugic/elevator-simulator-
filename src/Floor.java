@@ -4,14 +4,10 @@ import lombok.Getter;
 
 import java.io.IOException;
 import java.net.*;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.LinkedList;
 
-/**
- * Class representing a floor which implements a Thread and socket
- * for each floor, with the corresponding id/numbers and which checks
- * for inputs for a given file.
- */
 public class Floor implements Runnable {
     private static int nextFloorNum = 1;
     private static int nextId= 1;
@@ -25,27 +21,14 @@ public class Floor implements Runnable {
     @Getter
     DatagramSocket socket;
     DatagramPacket receivePacket;
-
-    /**
-     * Returns the next utilized floor number for each floor.
-     * @return Next floor number.
-     */
     static synchronized int getNextFloorNum() {
         return nextFloorNum++;
     }
 
-    /**
-     * Returns the next utilized ID number for each floor.
-     * @return Next ID number.
-     */
     static synchronized int getNextId() {
         return nextId++;
     }
 
-    /**
-     * Constructor for floor instance which creates a new ID and floor number depending on
-     * the previous amount allocated, and a socket/logger for communication/debugging.
-     */
     public Floor() {
         this.id = getNextId();
         this.logger = new Logger(System.getProperty("user.home") + "/floor" + this.id + ".log");
@@ -57,31 +40,21 @@ public class Floor implements Runnable {
         }
     }
 
-    /**
-     * Interface Runnable method which assigns a linked list for requests and
-     * checks for input requests from the subsystem while there are requests present.
-     *
-     * It then checks this information compared to the current time and sends the request
-     * when it is the given input time.
-     */
     @Override
     public void run() {
+
         LinkedList<RequestData> requests = FloorSubsystem.getRequests(this.getFloorNum());
-        logger.debug("All requests: \n" + requests);
 
         Calendar currentTime = Calendar.getInstance();
         while (!requests.isEmpty()) {
             RequestData request = requests.poll();
             this.destFloor = request.getRequestFloor();
-            //Check current time compared to input time
             while(request.getTime().compareTo(currentTime.getTime()) != 0){
                 currentTime = Calendar.getInstance();
             }
             printRequestInfo(request);
-            sendRequest(request.getDirection(), this.floorNum, id, request.getError());
-            if(request.getError() != 2){
-                waitRequest();
-            }
+            sendRequest(request.getDirection(), this.floorNum, id);
+            waitRequest();
         }
     }
 
@@ -91,10 +64,9 @@ public class Floor implements Runnable {
      * @param buttonType The direction of the request (UP or DOWN)
      * @param floorNum   The floor number
      * @param port       The port number
-     * @param error The error code to be sent
      */
-    private void sendRequest(Direction buttonType, int floorNum, int port, int error) {
-        DatagramPacket packet = createPacket(buttonType, floorNum, port, error);
+    private void sendRequest(Direction buttonType, int floorNum, int port) {
+        DatagramPacket packet = createPacket(buttonType, floorNum, port);
         try {
             socket.send(packet);
         } catch (IOException e) {
@@ -111,22 +83,19 @@ public class Floor implements Runnable {
      * @param buttonType The direction of the request (UP or DOWN)
      * @param floorNum   The floor number
      * @param port       The port number
-     * @param error The error code to be sent
      * @return DatagramPacket to be sent
      */
-    public DatagramPacket createPacket(Direction buttonType, int floorNum, int port, int error) {
-        byte[] data = new byte[4];
+    public DatagramPacket createPacket(Direction buttonType, int floorNum, int port) {
+        byte[] data = new byte[3];
         data[0] = (byte) ((buttonType == Direction.UP) ? 1 : 0);
         data[1] = (byte) floorNum;
         data[2] = (byte) port;
-        data[3] = (byte) error;
         try {
             return new DatagramPacket(data, data.length, InetAddress.getLocalHost(), SCHEDULER_PORT);
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);
         }
     }
-
     /** Creates packet to be sent by socket
      * Packet Format:
      * first byte : floor number
@@ -143,16 +112,20 @@ public class Floor implements Runnable {
             throw new RuntimeException(e);
         }
     }
-
     /**
      * Parses the received packet.
      *
      * @param packet The received packet
      */
     private void parseRequest(DatagramPacket packet) {
+
         logger.debug("Packet data: " + packet.getData()[0]);
-        if (packet.getData()[0] != 0) {
-            board();
+        switch (packet.getData()[0]) {
+            case 0: // open door
+                break;
+                default:
+                    board();
+                    break;
         }
     }
 

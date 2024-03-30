@@ -3,21 +3,27 @@ package src;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.IOException;
 import java.net.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
-/**
- * Elevator class which implements a single Thread representing
- * an elevator, with state and corresponding elevator subsystem.
- */
 public class Elevator implements Runnable {
+
+    // Constants
     private static final int MAX_NUM_OF_PASSENGERS = 10;
     private static final int SCHEDULER_PORT = 64;
     private final Logger logger;
+
+    // Static variables
     private static int nextPortNum = 66;
     private static int nextId = 1;
+
     @Getter
     private final int port;
+
+    // Instance variables
     @Getter
     private final int id;
     @Getter
@@ -25,7 +31,7 @@ public class Elevator implements Runnable {
     @Getter
     private Door door;
     @Getter
-    private Display display;
+private Display display;
     @Getter
     private List<ElevatorButton> buttons = new ArrayList<>();
     @Getter
@@ -38,63 +44,37 @@ public class Elevator implements Runnable {
     @Getter
     private int numOfPassengers;
     @Getter
-    private Calendar firstRequestTimestamp;
-    @Getter
-    private Calendar lastCompletedRequestTimestamp;
-    @Getter
-    private ElevatorStateMachine state;
-    private boolean shutdown;
+    private ElevatorStateEnum state;
 
-    //Queue of current requests
-    PriorityQueue<Integer> requested = new PriorityQueue<>();
-    private ArrayList<Integer> passengerDestination = new ArrayList<>();
+    private ArrayList<Integer> requested = new ArrayList<>();
 
-    //Reference to subsystem utilized for synchronization
     private ElevatorSubsystem subsystem;
 
-    /**
-     * Returns the next utilized port number for the elevator.
-     * @return Next port number.
-     */
     static synchronized int getNextPortNum() {
         return nextPortNum++;
     }
 
-    /**
-     * Class constructor which assigns all instance variables
-     * and creates buttons/lamps/motor/door.
-     *
-     * @param subsystem The corresponding elevator subsystem.
-     * @param id ID of the elevator to be constructed.
-     */
-    public Elevator(ElevatorSubsystem subsystem, int id) {
+    public Elevator(ElevatorSubsystem subsystem, int ID) {
         this.port = nextPortNum;
         getNextPortNum();
         this.subsystem = subsystem;
-        this.id = id;
-        motor = new Motor(this, subsystem.getConfig());
-        door = new Door(subsystem.getConfig());
+        this.id = ID;
+        motor = new Motor(this);
+        door = new Door();
         display = new Display(this);
         currentFloor = 1;
+        display.display(String.valueOf(currentFloor));
         destinationFloor = 0;
         numOfPassengers = 0;
-        shutdown = false;
-        firstRequestTimestamp = null;
-        lastCompletedRequestTimestamp = null;
-        state = new ElevatorStateMachine();
-        state.setState(new IdleState(state));//elevator initialized to idle.
+        state = ElevatorStateEnum.IDLE; //elevator initialized to idle.
 
-        for (int i = 0; i <= subsystem.getNumFloors(); i++){
+        for (int i = 1; i <= subsystem.getNumFloors(); i++){
             buttons.add(new ElevatorButton(i));
             lamps.add(new ElevatorLamp(i));
         }
-        this.logger = new Logger(System.getProperty("user.home") + "/elevator" + id + ".log");
+        this.logger = new Logger(System.getProperty("user.home") + "/elevator" + ID + ".log");
     }
 
-    /**
-     * Delay method utilized to pause elevator when no requests
-     * are available or elevator is in an error state.
-     */
     public synchronized void pause(){
         try{
             this.wait();
@@ -103,33 +83,16 @@ public class Elevator implements Runnable {
         }
     }
 
-    /**
-     * Interface Runnable method which executes upon start of thread.
-     * Runs forever and checks for requests added to the queue, then
-     * updated elevator state accordingly.
-     */
     @Override
     public void run() {
-        int i = 0;
-        while(!shutdown){
+        while(true){
             if(requested.isEmpty()){
-                state.setState(new IdleState(state));
                 pause();
-            }else{
-                if (i == 0) {
-                    firstRequestTimestamp = Calendar.getInstance();
-                    i = 1;
-                }
-                int floorNum = requested.poll();
-                System.out.println(Arrays.toString(requested.toArray()));
-                System.out.println(floorNum);
-                state.setState((this.currentFloor >= floorNum) ?
-                               new Moving_down(state) :
-                               new Moving_up(state));
-                move(floorNum);
-                lastCompletedRequestTimestamp = Calendar.getInstance();
-                sendUpdate();
             }
+            int floorNum = requested.removeFirst();
+            state = (this.currentFloor >= floorNum) ? ElevatorStateEnum.MOVING_DOWN : ElevatorStateEnum.MOVING_UP;
+            move(floorNum);
+            sendUpdate();
         }
     }
 
@@ -139,30 +102,7 @@ public class Elevator implements Runnable {
     public synchronized void parseRequest(DatagramPacket packet){
         printPacketReceived(packet);
         int floorNum = packet.getData()[0];
-        if(floorNum != currentFloor){
-            lamps.get(floorNum - 1).turnOn();
-        }
-        if(packet.getData()[2] != 0){
-            switch(packet.getData()[2]){
-                case (byte) 1:
-                    try{
-                        logger.debug("TRANSIENT ERROR DETECTED: PAUSED");
-                        Thread.sleep(10000);
-                        logger.debug("TRANSIENT ERROR RESOLVED: CONTINUING");
-                        break;
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                case (byte) 2:
-                    logger.debug("FATAL ERROR DETECTED: CEASED OPERATION");
-                    state.setState(new FaultState(state));
-                    this.getDisplay().display();
-                    shutdown = true;
-                    return;
-            }
-        }
         requested.add(floorNum);
-        notifyAll();
     }
 
     /**
@@ -171,34 +111,17 @@ public class Elevator implements Runnable {
      * @param floorNum floor number to move to
      */
     public void move(int floorNum){
-        logger.debug("Closing doors at floor " + currentFloor);
-        door.close();
-        logger.debug("Moving to floor " + floorNum + " from floor " + currentFloor);
-        motor.move(floorNum, passengerDestination);
-        logger.debug("Opening doors at floor " + currentFloor);
+        logger.debug("Moving to floor " + floorNum + " from currentFloor " + currentFloor);
+        motor.move(floorNum);
         door.open();
-        if(subsystem.getConfig().getNumFloors() > floorNum) {
-            lamps.get(floorNum-1).turnOff();
-        }
-        logger.debug("Loading/unloading elevator at floor " + currentFloor);
-        state.setState(new UnloadingLoading(state));
-        this.getDisplay().display();
-        //Sleep for necessary elevator loading time
-        try {
-            Thread.sleep(subsystem.getConfig().getLoadingTime());
-        }catch(InterruptedException e){
-            throw new RuntimeException(e);
-        }
-        state.setState(new IdleState(state));
-        this.getDisplay().display();
-
+        state = ElevatorStateEnum.LOADING_UNLOADING;
     }
 
     /**
      * Sends an update packet to the Scheduler indicating that the doors are open.
      * This method creates a packet with the specified update type and sends it through the socket.
      */
-    public void sendUpdate() {
+    private void sendUpdate() {
         subsystem.sendSchedulerPacket(createPacket(UpdateType.OPEN_DOORS));
     }
 

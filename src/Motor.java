@@ -1,68 +1,42 @@
 package src;
 
 import java.util.concurrent.TimeUnit;
-import java.util.ArrayList;
 
 /**
- * Class representing the motor of an elevator which takes as input
- * a configuration file with the given speed of movement between floors.
+ * Represents the motor of an elevator.
  */
 public class Motor {
-    //The elevator associated with the motor
     private Elevator elevator;
-    //The configuration file associated with the speed of the motor
-    private ConfigurationReader config;
 
     /**
-     * Constructs a Motor object with the specified elevator and
-     * configuration file.
+     * Constructs a Motor object with the specified elevator.
      *
      * @param e The elevator associated with this motor
-     * @param config The configuration file to be used
      */
-    public Motor(Elevator e, ConfigurationReader config) {
+    public Motor(Elevator e) {
         elevator = e;
-        this.config = config;
     }
 
     /**
-     * Moves the elevator to the specified floor number. Returns without
-     * movement if the requested floor is invalid or the current floor is the
-     * requested floor. Utilizes a timeout for movement based on the movement
-     * time found in the configuration file.
+     * Moves the elevator to the specified floor number.
      *
      * @param floorNum The target floor number
      */
-    public void move(int floorNum , ArrayList<Integer> passengerDestination) {
-        if (config.getNumFloors() < floorNum){
-            return;
-        }
+    public void move(int floorNum) {
         if (elevator.getCurrentFloor() == floorNum){
-            try {
-                TimeUnit.MILLISECONDS.sleep(config.getMovingTime());
-            }catch(InterruptedException e) {
-                throw new RuntimeException(e);
-            }
+            //elevator.getDisplay().display(elevator.getCurrentFloor());
             return;
         }
-        /* -- solution for edge case of dropping off passenger inbetween a request - incomplete
-        if(passengerDestination.contains(elevator.getCurrentFloor())){
-            elevator.setCurrentFloor(elevator.getCurrentFloor());
-            elevator.getDisplay().display(String.valueOf(elevator.getCurrentFloor()));
-            System.out.println("PASSENGER DESTINATION" + elevator.getCurrentFloor());
-            elevator.sendUpdate();
-            elevator.move(floorNum);
-        }
-*/
+
         while (elevator.getCurrentFloor() != floorNum) {
             try {
-                TimeUnit.MILLISECONDS.sleep(config.getMovingTime());
+                TimeUnit.SECONDS.sleep(2);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
             elevator.setCurrentFloor(elevator.getCurrentFloor() +
                     (floorNum - elevator.getCurrentFloor() > 0 ? 1 : -1));
-            elevator.getDisplay().display();
+            elevator.getDisplay().display(String.valueOf(elevator.getCurrentFloor()));
         }
         //elevator.getState().Arrival();
     }
