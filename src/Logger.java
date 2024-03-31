@@ -6,6 +6,10 @@ import java.io.PrintWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+/**
+ * Class implementing a Logger which writes details relevant to the elevator system actions
+ * and corresponding information utilized for debugging.
+ */
 public class Logger {
     private final DateTimeFormatter dtFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
     private final PrintWriter out;

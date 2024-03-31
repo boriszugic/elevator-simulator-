@@ -15,7 +15,8 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Utility class for reading a JSON configuration file and launching processes based on the configuration.
+ * Utility class for reading a JSON configuration file and saving variables for use within
+ * other classes based on the given configurations.
  */
 public class ConfigurationReader {
 
@@ -37,10 +38,25 @@ public class ConfigurationReader {
     @Getter
     public final String inputFile;
 
+    /**
+     *
+     * @param filePath
+     * @throws IOException
+     * @throws ParseException
+     */
+
+    /**
+     * Constructor which takes a filePath and attempts to parse the given
+     * file and determine config variables.
+     *
+     * @param filePath The filepath of the configurations.
+     * @throws IOException
+     * @throws ParseException
+     */
     public ConfigurationReader(String filePath) throws IOException, ParseException {
         // Parse the configuration file
         JSONParser parser = new JSONParser();
-        JSONObject config = (JSONObject) parser.parse(new FileReader("config.json"));
+        JSONObject config = (JSONObject) parser.parse(new FileReader(filePath));
 
         // Get values of each field
         this.numFloors = ((Long) config.get("floors")).intValue();
