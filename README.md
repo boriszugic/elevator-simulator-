@@ -49,7 +49,7 @@ file which can be modified to test as desired.
       - Cole McPherson: Elevator State Machine (ElevatorState, ElevatorStateMachine, etc)
       - Johnny Nguyen: Scheduler 
       - Nitin Alagu:
-      - Evan Baldwin: 
+      - Evan Baldwin: ElevatorStateMachine, documentation
     - Unit Testing:
       - Evan Baldwin: Updated UDP, Elevator, Scheduler, Floor Tests
     
@@ -58,9 +58,9 @@ file which can be modified to test as desired.
       - Cole McPherson: Elevator/Scheduler State Diagrams
       - Evan Baldwin: Updated Elevator/Scheduler State Diagrams, UML Class Diagram
     - Coding:
-      - Boris Zugic: GUI, Logger, Input file
+      - Boris Zugic: GUI implementation, Logger, Input file parsing
       - Cole McPherson: 
-      - Johnny Nguyen: Scheduler, UDP Communication
+      - Johnny Nguyen: Scheduler algorithms, UDP Communication
       - Nitin Alagu:
       - Evan Baldwin: Scheduler State Machine (SchedulerState, StateStateMachine, etc)
     - Unit Testing:
@@ -68,13 +68,14 @@ file which can be modified to test as desired.
 
 - Iteration 4:
     - UML Class and Sequence Diagrams:
+      - Evan Baldwin: Elevator State Diagram, Sequence Diagram
       - 
     - Coding:
       - Boris Zugic: Elevator Selection Algorithm
       - Cole McPherson: UDP Communication, Scheduler 
       - Johnny Nguyen: Scheduler Communication/Logic, Parsing
       - Nitin Alagu:
-      - Evan Baldwin: Elevator threading/subsystem, UDP Communication, Error injection/elevator response
+      - Evan Baldwin: Elevator threading/subsystem, Scheduler, UDP Communication, Error injection/elevator response
     - Unit Testing:
       - Evan Baldwin: Updated Elevator tests, new Scheduler tests
 

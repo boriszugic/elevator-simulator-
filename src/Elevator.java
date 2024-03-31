@@ -142,17 +142,22 @@ public class Elevator implements Runnable {
 //        }));
 
         if((int)packet.getData()[2] != 0){
-            switch((int)packet.getData()[2]){
-                case 1:
+            switch(packet.getData()[2]){
+                case (byte) 1:
                     try{
                         logger.debug("TRANSIENT ERROR DETECTED: PAUSED");
                         Thread.sleep(10000);
+                        break;
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
-                case 2:
-                    logger.debug("FATAL ERROR DETECTED: CEASED OPERATION");
-                    pause();
+                case (byte) 2:
+                    try{
+                        logger.debug("FATAL ERROR DETECTED: CEASED OPERATION");
+                        Thread.sleep(100000000);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
             }
         }
         notifyAll();

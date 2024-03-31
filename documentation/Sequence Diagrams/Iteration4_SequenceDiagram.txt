@@ -1,0 +1,27 @@
+title SYSC3303 Project Iteration 4 Sequence Diagram
+
+activate Floor
+Floor->Floor:request.getTime().compareTo(currentTime.getTime())
+activate Scheduler
+Scheduler->Scheduler:waitRequest()
+Floor->Scheduler: sendRequest(request)
+Floor->Floor:waitRequest()
+deactivate Floor
+Scheduler->Scheduler:parseRequest(packet)
+Scheduler->ElevatorSubsystem:sendRequest(packet)
+activate ElevatorSubsystem
+Scheduler->Scheduler:waitRequest()
+deactivate Scheduler
+ElevatorSubsystem->ElevatorSubsystem: receiveRequest()
+ElevatorSubsystem->Elevator: sendElevatorPacket(packet)
+activate Elevator
+deactivate ElevatorSubsystem
+Elevator->Elevator:parseRequest(packet)
+Elevator->Elevator:move(floorNum)
+Elevator-->ElevatorSubsystem:sendUpdate(packet)
+deactivate Elevator
+activate ElevatorSubsystem
+ElevatorSubsystem-->Scheduler:sendSchedulerPacket(packet)
+deactivate ElevatorSubsystem
+activate Scheduler
+Scheduler->Scheduler:parseRequest(packet)

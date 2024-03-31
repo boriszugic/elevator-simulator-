@@ -24,6 +24,8 @@ public class Scheduler implements Runnable{
     @Getter
     private SchedulerStateEnum state;
 
+    private ArrayList<DatagramPacket> requestQueue;
+
     /**
      * Private constructor to prevent instantiation from outside the class.
      */
@@ -37,6 +39,7 @@ public class Scheduler implements Runnable{
             logger.error("Error creating DatagramSocket");
             throw new RuntimeException("Error creating DatagramSocket", e);
         }
+        requestQueue = new ArrayList<>();
     }
 
     /**
@@ -48,6 +51,7 @@ public class Scheduler implements Runnable{
         socket = null;
         this.elevators = new HashMap<>();
         this.floors = new HashMap<>();
+        requestQueue = new ArrayList<>();
     }
 
     /** Singleton instance */
@@ -150,7 +154,10 @@ public class Scheduler implements Runnable{
     @Override
     public void run() {
         while (true) {
-            sendRequest(parseRequest(waitRequest()));
+            requestQueue.add(waitRequest());
+            if(!requestQueue.isEmpty()){
+                sendRequest(parseRequest(requestQueue.removeFirst()));
+            }
         }
     }
 
@@ -176,6 +183,7 @@ public class Scheduler implements Runnable{
     public DatagramPacket parseRequest(DatagramPacket packet){
         byte[] data = packet.getData();
         state = SchedulerStateEnum.SCHEDULING;
+        System.out.println(packet.getLength());
         if (packet.getLength() == 3 && data[2] == 0){ // Elevator response
             return scheduleRequest(packet);
         }
