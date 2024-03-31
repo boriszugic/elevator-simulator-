@@ -131,7 +131,7 @@ public class Elevator implements Runnable {
         printPacketReceived(packet);
         int floorNum = packet.getData()[0];
         requested.add(floorNum);
-        lamps.get(floorNum).turnOn();
+        lamps.get(floorNum-1).turnOn();
         if(currentFloor!=floorNum){requested.add(floorNum);}
 
         /**Request sorting algorithm --incomplete **/
@@ -177,7 +177,7 @@ public class Elevator implements Runnable {
         door.open();
         state = ElevatorStateEnum.LOADING_UNLOADING;
         if(subsystem.getConfig().getNumFloors() > floorNum) {
-            lamps.get(floorNum).turnOff();
+            lamps.get(floorNum-1).turnOff();
         }
     }
 

@@ -1,5 +1,5 @@
 {
-  "floors": 5,
+  "floors": 6,
   "elevators": 3,
   "input_file": "input.txt",
   "door_open_time": 2000,
