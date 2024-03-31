@@ -24,7 +24,7 @@ file which can be modified to test as desired.
 
 # Issues/Limitations
 1. Can run a maximum of 64 floors and 63 elevators.
-
+2. There is currently a slight delay in scheduler response/output that slows the system performance, this issue will be fixed in the next iteration.
 # Responsibilities
 
 - Iteration 1:
@@ -59,7 +59,7 @@ file which can be modified to test as desired.
       - Cole McPherson: Elevator/Scheduler State Diagrams
       - Evan Baldwin: Updated Elevator/Scheduler State Diagrams, UML Class Diagram
     - Coding:
-      - Boris Zugic: GUI, Logger, Input file
+      - Boris Zugic: GUI, Logger, Input file parsing
       - Cole McPherson: 
       - Johnny Nguyen: Scheduler, UDP Communication
       - Nitin Alagu:
@@ -75,7 +75,7 @@ file which can be modified to test as desired.
       - Cole McPherson: UDP Communication, Schedule/Scheduler Request Communication with Elevators
       - Johnny Nguyen: Scheduler Communication/Logic, Parsing
       - Nitin Alagu:
-      - Evan Baldwin: Elevator threading/subsystem, UDP Communication, Error injection/elevator response
+      - Evan Baldwin: Elevator threading/subsystem, UDP Communication, Error injection/elevator response, Communication Help
     - Unit Testing:
       - Evan Baldwin: Updated Elevator tests, new Scheduler tests
 
