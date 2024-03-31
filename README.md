@@ -43,7 +43,8 @@ file which can be modified to test as desired.
 
 - Iteration 2:
     - UML Class and Sequence Diagrams:
-      - 
+      - Nitin Alagu: Updated UML Class Diagram
+      - Cole McPherson: Updated Sequence, State Diagram
     - Coding:
       - Boris Zugic: UDP Communication (Elevator/Scheduler/Floor), Display
       - Cole McPherson: Elevator State Machine (ElevatorState, ElevatorStateMachine, etc)
@@ -71,7 +72,7 @@ file which can be modified to test as desired.
       - 
     - Coding:
       - Boris Zugic: Elevator Selection Algorithm
-      - Cole McPherson: UDP Communication, Scheduler 
+      - Cole McPherson: UDP Communication, Schedule/Scheduler Request Communication with Elevators
       - Johnny Nguyen: Scheduler Communication/Logic, Parsing
       - Nitin Alagu:
       - Evan Baldwin: Elevator threading/subsystem, UDP Communication, Error injection/elevator response
