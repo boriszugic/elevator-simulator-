@@ -176,7 +176,9 @@ public class Elevator implements Runnable {
         logger.debug("Opening door of elevator:" + id);
         door.open();
         state = ElevatorStateEnum.LOADING_UNLOADING;
-        lamps.get(floorNum).turnOff();
+        if(subsystem.getConfig().getNumFloors() > floorNum) {
+            lamps.get(floorNum).turnOff();
+        }
     }
 
     /**
