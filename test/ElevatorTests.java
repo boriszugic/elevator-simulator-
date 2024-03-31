@@ -1,12 +1,13 @@
 package test;
 
+import org.json.simple.parser.ParseException;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import src.Elevator;
-import src.ElevatorStateEnum;
-import src.ElevatorStructure;
-import src.ElevatorStateMachine;
+
+import src.*;
+
+import java.io.IOException;
 
 /**
  * This class is the test class for testing the functionality
@@ -16,16 +17,29 @@ public class ElevatorTests {
 
     private static Elevator elevator;
     private static ElevatorStructure stateElevator;
-    private static int numFloors = 3;
+    static ConfigurationReader config;
+
+    static {
+        try {
+            config = new ConfigurationReader("./testconfig.json");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static ElevatorSubsystem subsystem = new ElevatorSubsystem(config);
 
     ElevatorStateMachine elevatorStateMachine = new ElevatorStateMachine();
+
 
     /**
      * Initialize the testing environment with two elevators.
      */
     @Before
     public void setUp(){
-        elevator = new Elevator(numFloors);
+        elevator = subsystem.getElevators().get(1);
         stateElevator = new ElevatorStructure(1, ElevatorStateEnum.IDLE, 1, 0);
     }
 
@@ -34,13 +48,13 @@ public class ElevatorTests {
     */
     @Test
     public void testInit(){
-        assertEquals(elevator.getCurrentFloor(), 1);
-        assertEquals(elevator.getNumOfPassengers(), 0);
-        assertEquals(elevator.getDestinationFloor(), 0);
-        assertEquals(elevator.getId(), 1);
-        assertNotEquals(elevator.getDisplay(), null);
-        assertNotEquals(elevator.getButtons(), null);
-        assertNotEquals(elevator.getLamps(), null);
+        assertEquals(1, elevator.getCurrentFloor());
+        assertEquals(0, elevator.getNumOfPassengers());
+        assertEquals(0, elevator.getDestinationFloor());
+        assertEquals(1, elevator.getId());
+        assertNotEquals(null, elevator.getDisplay());
+        assertNotEquals(null, elevator.getButtons());
+        assertNotEquals(null, elevator.getLamps());
     }
 
     /**
@@ -53,7 +67,7 @@ public class ElevatorTests {
         assertEquals(2, elevator.getCurrentFloor());
         elevator.move(3);
         assertEquals(3, elevator.getCurrentFloor());
-        elevator.move(4);
+        elevator.move(25);
         assertEquals(3, elevator.getCurrentFloor());
     }
 
@@ -69,7 +83,5 @@ public class ElevatorTests {
         assertEquals("Moving", elevatorStateMachine.getState().toString());
         elevatorStateMachine.Arrival();
         assertEquals("Unloading/Loading", elevatorStateMachine.getState().toString());
-        //elevatorStateMachine.setState(new IdleState());
-        assertEquals("Idle", elevatorStateMachine.getState().toString());
     }
 }

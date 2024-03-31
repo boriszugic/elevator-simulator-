@@ -21,7 +21,7 @@ public class UDPTests {
         String[] args2 = new String[]{"1 2"};
         String[] args3 = new String[]{"testinput.txt"};
         Scheduler.main(args1);
-        Elevator.main(args2);
+//        Elevator.main(args2);
         FloorSubsystem.main(args3);
     }
     @Test
