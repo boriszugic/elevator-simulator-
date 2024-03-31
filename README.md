@@ -1,5 +1,5 @@
 # SYSC3303 Project Iteration 4 - Documentation
-Date: March 17th, 2024
+Date: March 30th, 2024
 
 # Authors
   - Boris Zugic,    101223924
@@ -17,13 +17,17 @@ This iteration has implemented UDP elements for effective communication between 
 been included in the code for both the Elevator and Scheduler which simulate the attached UML State Machine diagrams.
 
 # Using the program
-1) Utilzing the IntelliJ IDE, execute the main() method contained within the ConfigurationReader.java class.
+1) Utilzing the IntelliJ IDE, execute the main() method contained each subsystem (Scheduler, FloorSubsystem, ElevatorSubsystem).
+If desired, a configuration can be established that executes the methods in order of scheduler, floor_subsystem, and finally
+elevator_subsystem. A configuration file titled under config.json contains settings to modify floor/elevator numbers and timing values.
 Alternatively, each subsystem (Elevator, Floor, Scheduler) can be executed on a separate computer utilizing
 the same IP address and can perform UDP communication between each system. There is currently an input.txt
 file which can be modified to test as desired. 
 
 # Issues/Limitations
 1. Can run a maximum of 64 floors and 63 elevators.
+2. There is currently a slight delay in scheduler response/output that slows the system performance,
+this issue will be fixed in the next iteration.
 
 # Responsibilities
 
@@ -33,7 +37,7 @@ file which can be modified to test as desired.
       - Johnny Nguyen: Sequence Diagram
     - Coding:
       - Boris Zugic: Elevator, Floor, Main, ButtonType, Door, Motor, Scheduler
-      - Cole McPherson:
+      - Cole McPherson: 
       - Johnny Nguyen:
       - Nitin Alagu:
       - Evan Baldwin: Elevator movement, documentation
@@ -43,7 +47,8 @@ file which can be modified to test as desired.
 
 - Iteration 2:
     - UML Class and Sequence Diagrams:
-      - 
+      - Nitin Alagu: UML Class Diagram
+      - Cole McPherson: Elevator State Diagram
     - Coding:
       - Boris Zugic: UDP Communication (Elevator/Scheduler/Floor), Display
       - Cole McPherson: Elevator State Machine (ElevatorState, ElevatorStateMachine, etc)
@@ -73,7 +78,7 @@ file which can be modified to test as desired.
     - Coding:
       - Boris Zugic: Elevator Selection Algorithm
       - Cole McPherson: UDP Communication, Scheduler 
-      - Johnny Nguyen: Scheduler Communication/Logic, Parsing
+      - Johnny Nguyen: Scheduler Communication/Logic, UDP Parsing
       - Nitin Alagu:
       - Evan Baldwin: Elevator threading/subsystem, Scheduler, UDP Communication, Error injection/elevator response
     - Unit Testing:
