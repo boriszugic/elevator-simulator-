@@ -24,6 +24,8 @@ public class Scheduler implements Runnable{
     @Getter
     private SchedulerStateEnum state;
 
+
+
     /**
      * Private constructor to prevent instantiation from outside the class.
      */
@@ -65,7 +67,7 @@ public class Scheduler implements Runnable{
         printFloorAndElevatorInfo(scheduler);
 
         try {
-            TimeUnit.SECONDS.sleep(3);
+            TimeUnit.SECONDS.sleep(1);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -105,8 +107,8 @@ public class Scheduler implements Runnable{
                 // elevator init
                 case 3:
                     Scheduler.getInstance().getElevators().put((int) data[2],new ElevatorStructure(
-                                                               data[0], ElevatorStateEnum.IDLE,
-                                                               data[1], data[2]));
+                            data[0], ElevatorStateEnum.IDLE,
+                            data[1], data[2]));
                     logger.debug("---- ADDED ELEVATOR ----");
                     break;
                 default:
@@ -116,7 +118,7 @@ public class Scheduler implements Runnable{
         }
         try {
             Scheduler.getInstance().getSocket().send(new DatagramPacket(new byte[]{1}, 1,
-                                                     InetAddress.getLocalHost(), 150));
+                    InetAddress.getLocalHost(), 150));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -174,6 +176,7 @@ public class Scheduler implements Runnable{
      * @return The appropriate DatagramPacket to be sent
      */
     public DatagramPacket parseRequest(DatagramPacket packet){
+        //System.out.println("Packet length: "+packet.getLength());
         byte[] data = packet.getData();
         state = SchedulerStateEnum.SCHEDULING;
         if (packet.getLength() == 3 && data[2] == 0){ // Elevator response
@@ -319,7 +322,7 @@ public class Scheduler implements Runnable{
             data[1] = (byte) ID;
             data[2] = (byte) error;
             return new DatagramPacket(data, data.length,
-                                      InetAddress.getLocalHost(), elevator_port);
+                    InetAddress.getLocalHost(), elevator_port);
         } catch (UnknownHostException e) {
             logger.error("Error creating elevator packet.");
             throw new RuntimeException("Error creating elevator packet.");
@@ -379,6 +382,9 @@ public class Scheduler implements Runnable{
      * @param sender String name of the receiver
      */
     private void printPacketReceived(DatagramPacket packet, String sender) {
+        System.out.println("Packet received from " + sender);
+        System.out.println("From host port: " + packet.getPort());
+        System.out.println("Containing: "+ Arrays.toString(packet.getData()));
         logger.debug("Packet received from " + sender);
         logger.debug("From host port: " + packet.getPort());
         logger.debug("Containing: "+ Arrays.toString(packet.getData()));
@@ -391,6 +397,9 @@ public class Scheduler implements Runnable{
      */
     private void printPacketRequest(DatagramPacket packet) {
         //Information prints
+        System.out.println("Sending packet:");
+        System.out.println("Destination host port: " + packet.getPort());
+        System.out.println("Containing: " + Arrays.toString(packet.getData())+"\n");
         logger.debug("Sending packet:");
         logger.debug("Destination host port: " + packet.getPort());
         logger.debug("Containing: " + Arrays.toString(packet.getData()));
