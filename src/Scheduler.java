@@ -274,11 +274,12 @@ public class Scheduler implements Runnable{
         Optional<ElevatorStructure> suitableElevator = elevs.stream()
                 .filter(elevator -> isElevatorSuitable(elevator, direction, floorNum))
                 .findFirst();
-        System.out.println("choooseElevator is being ran here");
+        System.out.println("chooose Elevator is being ran here");
         // Set the new state of Scheduler's copy (Elevator will set its own)
         if(suitableElevator.isPresent()) {
             ElevatorStateMachine stateMachine = suitableElevator.get().getState();
             System.out.println(suitableElevator.get().getState().getState().toString());
+
             if (suitableElevator.get().getCurrFloor() - floorNum != 0) {
                 ElevatorState newState = suitableElevator.get().getCurrFloor() > floorNum ?
                                                                                 new Moving_up(stateMachine) :
@@ -294,6 +295,7 @@ public class Scheduler implements Runnable{
 
                 logger.debug("Chose Elevator " + suitableElevator.get().getId());
             }
+
         }
         else{
             System.out.println("grabbing the first in the elevators list");
