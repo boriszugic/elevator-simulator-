@@ -282,8 +282,8 @@ public class Scheduler implements Runnable{
 
             if (suitableElevator.get().getCurrFloor() - floorNum != 0) {
                 ElevatorState newState = suitableElevator.get().getCurrFloor() > floorNum ?
-                                                                                new Moving_up(stateMachine) :
-                                                                                new Moving_down(stateMachine);
+                                                                                new Moving_down(stateMachine) :
+                                                                                new Moving_up(stateMachine);
                 stateMachine.setState(newState);
                 System.out.println("state after choose elevator ");
                 System.out.println(suitableElevator.get().getState().getState().toString());

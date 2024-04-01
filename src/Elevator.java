@@ -133,6 +133,14 @@ public class Elevator implements Runnable {
     public synchronized void parseRequest(DatagramPacket packet){
         printPacketReceived(packet);
         int floorNum = packet.getData()[0];
+        if(!requested.isEmpty()){
+        for(int i = 0; i < requested.size(); i++){
+            if(floorNum < requested.get(i)){
+                requested.add(i,floorNum);
+                break;
+            }
+        }
+        }
         requested.add(floorNum);
         lamps.get(floorNum - 1).turnOn();
         System.out.println("[port:"+port+" requests: "+ requested);
