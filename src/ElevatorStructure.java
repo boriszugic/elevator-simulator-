@@ -14,7 +14,7 @@ public class ElevatorStructure {
     private int id;
     @Getter
     @Setter
-    private ElevatorStateEnum state;
+    private ElevatorStateMachine state;
     @Getter
     @Setter
     private int currFloor;
@@ -29,9 +29,9 @@ public class ElevatorStructure {
      * @param currFloor Current floor of the given elevator
      * @param port Port of the given elevator
      */
-    public ElevatorStructure(int id, ElevatorStateEnum state, int currFloor, int port){
+    public ElevatorStructure(int id, ElevatorStateMachine state, int currFloor, int port){
         this.id = id;
-        this.state = state;
+        this.state =  state;
         this.currFloor = currFloor;
         this.port = port;
     }

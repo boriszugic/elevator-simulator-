@@ -183,6 +183,7 @@ public class Floor implements Runnable {
      */
     private void board() {
         // get dest floor number from RequestData DS
+        System.out.println("request from" + floorNum);
         pressElevatorButton(this.destFloor);
     }
 
@@ -208,6 +209,7 @@ public class Floor implements Runnable {
      * @param request  RequestData instance containing packet request information
      */
     public void printRequestInfo(RequestData request) {
+        System.out.println("FLOOR REQUEST" + request.toString());
         logger.debug("---------- SEND ----------");
         logger.debug(request.toString());
         logger.debug("--------------------------");

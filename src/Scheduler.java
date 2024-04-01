@@ -24,6 +24,10 @@ public class Scheduler implements Runnable{
     @Getter
     private SchedulerStateEnum state;
 
+    //public ElevatorStateMachine elevatorStateMachine   = new ElevatorStateMachine();
+
+
+
     private ArrayList<DatagramPacket> requestQueue;
 
     /**
@@ -69,7 +73,7 @@ public class Scheduler implements Runnable{
         printFloorAndElevatorInfo(scheduler);
 
         try {
-            TimeUnit.SECONDS.sleep(3);
+            TimeUnit.SECONDS.sleep(1);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -108,9 +112,10 @@ public class Scheduler implements Runnable{
                     break;
                 // elevator init
                 case 3:
+                    ElevatorStateMachine elevatorStateMachine   = new ElevatorStateMachine();
                     Scheduler.getInstance().getElevators().put((int) data[2],new ElevatorStructure(
-                                                               data[0], ElevatorStateEnum.IDLE,
-                                                               data[1], data[2]));
+                            data[0], elevatorStateMachine,
+                            data[1], data[2]));
                     logger.debug("---- ADDED ELEVATOR ----");
                     break;
                 default:
@@ -120,7 +125,7 @@ public class Scheduler implements Runnable{
         }
         try {
             Scheduler.getInstance().getSocket().send(new DatagramPacket(new byte[]{1}, 1,
-                                                     InetAddress.getLocalHost(), 150));
+                    InetAddress.getLocalHost(), 150));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -181,9 +186,9 @@ public class Scheduler implements Runnable{
      * @return The appropriate DatagramPacket to be sent
      */
     public DatagramPacket parseRequest(DatagramPacket packet){
+        //System.out.println("Packet length: "+packet.getLength());
         byte[] data = packet.getData();
         state = SchedulerStateEnum.SCHEDULING;
-        System.out.println(packet.getLength());
         if (packet.getLength() == 3 && data[2] == 0){ // Elevator response
             return scheduleRequest(packet);
         }
@@ -239,7 +244,7 @@ public class Scheduler implements Runnable{
         int floorNum = data[0];
         // Create a packet to elevator port assigned to floor in the if statement above
         DatagramPacket returnPacket = createElevatorPacket(floorNum, floors.get((int)data[1]).getElevatorPort(), 0);
-        elevators.get(floors.get((int)data[1]).getElevatorPort()).setState(ElevatorStateEnum.IDLE);
+        //elevators.get(floors.get((int)data[1]).getElevatorPort()).setState(new IdleState());
         return returnPacket;
     }
 
@@ -276,16 +281,31 @@ public class Scheduler implements Runnable{
         Optional<ElevatorStructure> suitableElevator = elevs.stream()
                 .filter(elevator -> isElevatorSuitable(elevator, direction, floorNum))
                 .findFirst();
+        System.out.println("chooose Elevator is being ran here");
         // Set the new state of Scheduler's copy (Elevator will set its own)
         if(suitableElevator.isPresent()) {
+            ElevatorStateMachine stateMachine = suitableElevator.get().getState();
+            System.out.println(suitableElevator.get().getState().getState().toString());
+
             if (suitableElevator.get().getCurrFloor() - floorNum != 0) {
+                ElevatorState newState = suitableElevator.get().getCurrFloor() > floorNum ?
+                                                                                new Moving_up(stateMachine) :
+                                                                                new Moving_down(stateMachine);
+                stateMachine.setState(newState);
+                System.out.println("state after choose elevator ");
+                System.out.println(suitableElevator.get().getState().getState().toString());
+                /*
                 suitableElevator.get().setState((suitableElevator.get().getCurrFloor() > floorNum) ?
                         ElevatorStateEnum.MOVING_DOWN :
                         ElevatorStateEnum.MOVING_UP);
+                        */
+
                 logger.debug("Chose Elevator " + suitableElevator.get().getId());
             }
+
         }
         else{
+            System.out.println("grabbing the first in the elevators list");
             return elevs.getFirst();
         }
         return suitableElevator.get(); // Return the found elevator
@@ -301,12 +321,15 @@ public class Scheduler implements Runnable{
      * @return True if elevator is suitable, false otherwise
      */
     private boolean isElevatorSuitable(ElevatorStructure elevator, Direction direction, int floorNum) {
-        switch (elevator.getState()) {
-            case IDLE:
+        System.out.println(elevator.getState().getState().toString());
+        switch(elevator.getState().getState().toString()) {
+            case "Idle":
                 return true; // An idle elevator is always suitable
-            case MOVING_UP:
+            case "Moving_up":
+                System.out.println("Moving UP Is recognized");
                 return direction == Direction.UP && elevator.getCurrFloor() <= floorNum;
-            case MOVING_DOWN:
+            case "Moving_down":
+                System.out.println("Moving DOWN is recognized");
                 return direction == Direction.DOWN && elevator.getCurrFloor() >= floorNum;
             default:
                 return false; // If the elevator is in a state that doesn't allow it to take new requests
@@ -327,7 +350,7 @@ public class Scheduler implements Runnable{
             data[1] = (byte) ID;
             data[2] = (byte) error;
             return new DatagramPacket(data, data.length,
-                                      InetAddress.getLocalHost(), elevator_port);
+                    InetAddress.getLocalHost(), elevator_port);
         } catch (UnknownHostException e) {
             logger.error("Error creating elevator packet.");
             throw new RuntimeException("Error creating elevator packet.");
@@ -387,6 +410,9 @@ public class Scheduler implements Runnable{
      * @param sender String name of the receiver
      */
     private void printPacketReceived(DatagramPacket packet, String sender) {
+        System.out.println("Packet received from " + sender);
+        System.out.println("From host port: " + packet.getPort());
+        System.out.println("Containing: "+ Arrays.toString(packet.getData()));
         logger.debug("Packet received from " + sender);
         logger.debug("From host port: " + packet.getPort());
         logger.debug("Containing: "+ Arrays.toString(packet.getData()));
@@ -399,6 +425,9 @@ public class Scheduler implements Runnable{
      */
     private void printPacketRequest(DatagramPacket packet) {
         //Information prints
+        System.out.println("Sending packet:");
+        System.out.println("Destination host port: " + packet.getPort());
+        System.out.println("Containing: " + Arrays.toString(packet.getData())+"\n");
         logger.debug("Sending packet:");
         logger.debug("Destination host port: " + packet.getPort());
         logger.debug("Containing: " + Arrays.toString(packet.getData()));

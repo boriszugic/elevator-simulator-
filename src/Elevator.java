@@ -8,6 +8,7 @@ import java.net.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Comparator;
 
 /**
  * Elevator class which implements a single Thread representing
@@ -53,6 +54,7 @@ public class Elevator implements Runnable {
 
     //Queue of current requests
     private ArrayList<Integer> requested = new ArrayList<>();
+    private ArrayList<Integer> passengerDestination = new ArrayList<>();
 
     //Reference to subsystem utilized for synchronization
     private ElevatorSubsystem subsystem;
@@ -86,7 +88,7 @@ public class Elevator implements Runnable {
         numOfPassengers = 0;
         state = ElevatorStateEnum.IDLE; //elevator initialized to idle.
 
-        for (int i = 1; i <= subsystem.getNumFloors(); i++){
+        for (int i = 0; i <= subsystem.getNumFloors(); i++){
             buttons.add(new ElevatorButton(i));
             lamps.add(new ElevatorLamp(i));
         }
@@ -117,6 +119,7 @@ public class Elevator implements Runnable {
                 pause();
             }else {
                 int floorNum = requested.removeFirst();
+                System.out.println("Elevator MOVING TO " + floorNum);
                 state = (this.currentFloor >= floorNum) ? ElevatorStateEnum.MOVING_DOWN : ElevatorStateEnum.MOVING_UP;
                 move(floorNum);
                 sendUpdate();
@@ -130,16 +133,9 @@ public class Elevator implements Runnable {
     public synchronized void parseRequest(DatagramPacket packet){
         printPacketReceived(packet);
         int floorNum = packet.getData()[0];
-        lamps.get(floorNum-1).turnOn();
+        lamps.get(floorNum - 1).turnOn();
         if(currentFloor!=floorNum){requested.add(floorNum);}
-
-        /**Request sorting algorithm --incomplete **/
-//        requested.sort(Comparator.comparingInt(floor -> {
-//            int distance = Math.abs(floor - currentFloor);
-//            boolean isDirectionUp = floor > currentFloor;
-//            return isDirectionUp ? distance : -distance;
-//        }));
-
+        System.out.println("[port:"+port+" requests: "+ requested);
         if((int)packet.getData()[2] != 0){
             switch(packet.getData()[2]){
                 case (byte) 1:
@@ -160,6 +156,7 @@ public class Elevator implements Runnable {
                     }
             }
         }
+
         notifyAll();
     }
 
@@ -172,8 +169,9 @@ public class Elevator implements Runnable {
         logger.debug("Closing door of elevator:" + id);
         door.close();
         logger.debug("Moving to floor " + floorNum + " from currentFloor " + currentFloor);
-        motor.move(floorNum);
-        logger.debug("Opening door of elevator:" + id);
+        motor.move(floorNum, passengerDestination);
+        //requested.removeFirst();
+        logger.debug("Opening doors of elevator " + id + " at floor " + currentFloor);
         door.open();
         state = ElevatorStateEnum.LOADING_UNLOADING;
         if(subsystem.getConfig().getNumFloors() > floorNum) {
@@ -185,7 +183,7 @@ public class Elevator implements Runnable {
      * Sends an update packet to the Scheduler indicating that the doors are open.
      * This method creates a packet with the specified update type and sends it through the socket.
      */
-    private void sendUpdate() {
+    public void sendUpdate() {
         subsystem.sendSchedulerPacket(createPacket(UpdateType.OPEN_DOORS));
     }
 
