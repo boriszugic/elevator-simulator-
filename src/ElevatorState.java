@@ -10,7 +10,7 @@ public interface ElevatorState {
      *
      * @param context Current context of the state machine.
      */
-    void requestReceived(ElevatorStateMachine context);
+    void requestReceived(ElevatorStateMachine context, String direction);
 
     /**
      * The current state receives a notification of arrival and responds accordingly.
@@ -29,7 +29,7 @@ public interface ElevatorState {
      *
      * @param context Current context of the state machine.
      */
-    void nextRequest(ElevatorStateMachine context);
+    void nextRequest(ElevatorStateMachine context, String direction);
 
     /**
      * Overwrites toString method in each state class to give string representation

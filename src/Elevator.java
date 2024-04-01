@@ -165,7 +165,7 @@ public class Elevator implements Runnable {
         logger.debug("Moving to floor " + floorNum + " from currentFloor " + currentFloor);
         motor.move(floorNum, passengerDestination);
         //requested.removeFirst();
-        logger.debug("Opening doors of elevator:" + id + "at" + currentFloor);
+        logger.debug("Opening doors of elevator " + id + " at floor " + currentFloor);
         door.open();
         state = ElevatorStateEnum.LOADING_UNLOADING;
         lamps.get(floorNum-1).turnOff();

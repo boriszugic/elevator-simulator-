@@ -1,10 +1,10 @@
 {
   "floors": 7,
-  "elevators": 3,
+  "elevators": 2,
   "input_file": "input.txt",
   "door_open_time": 2000,
   "door_close_time": 2000,
-  "moving_time": 20000,
-  "loading_time": 11000,
+  "moving_time": 2000,
+  "loading_time": 1100,
   "doors_blocked_time": 10000
 }

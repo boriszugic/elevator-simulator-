@@ -24,6 +24,8 @@ public class Scheduler implements Runnable{
     @Getter
     private SchedulerStateEnum state;
 
+    //public ElevatorStateMachine elevatorStateMachine   = new ElevatorStateMachine();
+
 
 
     /**
@@ -106,8 +108,9 @@ public class Scheduler implements Runnable{
                     break;
                 // elevator init
                 case 3:
+                    ElevatorStateMachine elevatorStateMachine   = new ElevatorStateMachine();
                     Scheduler.getInstance().getElevators().put((int) data[2],new ElevatorStructure(
-                            data[0], ElevatorStateEnum.IDLE,
+                            data[0], elevatorStateMachine,
                             data[1], data[2]));
                     logger.debug("---- ADDED ELEVATOR ----");
                     break;
@@ -234,7 +237,7 @@ public class Scheduler implements Runnable{
         int floorNum = data[0];
         // Create a packet to elevator port assigned to floor in the if statement above
         DatagramPacket returnPacket = createElevatorPacket(floorNum, floors.get((int)data[1]).getElevatorPort(), 0);
-        elevators.get(floors.get((int)data[1]).getElevatorPort()).setState(ElevatorStateEnum.IDLE);
+        //elevators.get(floors.get((int)data[1]).getElevatorPort()).setState(new IdleState());
         return returnPacket;
     }
 
@@ -271,16 +274,29 @@ public class Scheduler implements Runnable{
         Optional<ElevatorStructure> suitableElevator = elevs.stream()
                 .filter(elevator -> isElevatorSuitable(elevator, direction, floorNum))
                 .findFirst();
+        System.out.println("choooseElevator is being ran here");
         // Set the new state of Scheduler's copy (Elevator will set its own)
         if(suitableElevator.isPresent()) {
+            ElevatorStateMachine stateMachine = suitableElevator.get().getState();
+            System.out.println(suitableElevator.get().getState().getState().toString());
             if (suitableElevator.get().getCurrFloor() - floorNum != 0) {
+                ElevatorState newState = suitableElevator.get().getCurrFloor() > floorNum ?
+                                                                                new Moving_up(stateMachine) :
+                                                                                new Moving_down(stateMachine);
+                stateMachine.setState(newState);
+                System.out.println("state after choose elevator ");
+                System.out.println(suitableElevator.get().getState().getState().toString());
+                /*
                 suitableElevator.get().setState((suitableElevator.get().getCurrFloor() > floorNum) ?
                         ElevatorStateEnum.MOVING_DOWN :
                         ElevatorStateEnum.MOVING_UP);
+                        */
+
                 logger.debug("Chose Elevator " + suitableElevator.get().getId());
             }
         }
         else{
+            System.out.println("grabbing the first in the elevators list");
             return elevs.getFirst();
         }
         return suitableElevator.get(); // Return the found elevator
@@ -296,12 +312,15 @@ public class Scheduler implements Runnable{
      * @return True if elevator is suitable, false otherwise
      */
     private boolean isElevatorSuitable(ElevatorStructure elevator, Direction direction, int floorNum) {
-        switch (elevator.getState()) {
-            case IDLE:
+        System.out.println(elevator.getState().getState().toString());
+        switch(elevator.getState().getState().toString()) {
+            case "Idle":
                 return true; // An idle elevator is always suitable
-            case MOVING_UP:
+            case "Moving_up":
+                System.out.println("Moving UP Is recognized");
                 return direction == Direction.UP && elevator.getCurrFloor() <= floorNum;
-            case MOVING_DOWN:
+            case "Moving_down":
+                System.out.println("Moving DOWN is recognized");
                 return direction == Direction.DOWN && elevator.getCurrFloor() >= floorNum;
             default:
                 return false; // If the elevator is in a state that doesn't allow it to take new requests
