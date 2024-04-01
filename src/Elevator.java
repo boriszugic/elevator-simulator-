@@ -130,7 +130,6 @@ public class Elevator implements Runnable {
     public synchronized void parseRequest(DatagramPacket packet){
         printPacketReceived(packet);
         int floorNum = packet.getData()[0];
-        requested.add(floorNum);
         lamps.get(floorNum-1).turnOn();
         if(currentFloor!=floorNum){requested.add(floorNum);}
 
@@ -147,6 +146,7 @@ public class Elevator implements Runnable {
                     try{
                         logger.debug("TRANSIENT ERROR DETECTED: PAUSED");
                         Thread.sleep(10000);
+                        logger.debug("TRANSIENT ERROR RESOLVED: CONTINUING");
                         break;
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
