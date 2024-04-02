@@ -222,10 +222,8 @@ public class Scheduler implements Runnable{
         printPacketReceived(packet,"Floor");
         // Choose elevator
         ElevatorStructure elevator = chooseElevator((data[0] == 0 ? Direction.DOWN : Direction.UP), data[1]);
-        System.out.println("Chosen elevator: "+elevator);
         // Assign floor the chosen elevator
         int floorNum = data[1];
-
         floors.get((int) data[1]).setElevatorPort(elevator.getPort());
         return createElevatorPacket(floorNum, elevator.getPort(), data[3]);
     }
@@ -337,6 +335,11 @@ public class Scheduler implements Runnable{
             data[0] = (byte) floorNum;
             data[1] = (byte) ID;
             data[2] = (byte) error;
+            if(error==2){
+                ElevatorStateMachine tempStateMachine = elevators.get(ID).getState();
+                tempStateMachine.setState(new FaultState(tempStateMachine));
+                elevators.get(ID).setState(tempStateMachine);
+            }
             return new DatagramPacket(data, data.length,
                     InetAddress.getLocalHost(), elevator_port);
         } catch (UnknownHostException e) {

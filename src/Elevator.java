@@ -52,6 +52,8 @@ public class Elevator implements Runnable {
     @Getter
     private ElevatorStateEnum state;
 
+    private boolean shutdown;
+
     //Queue of current requests
     private ArrayList<Integer> requested = new ArrayList<>();
     private ArrayList<Integer> passengerDestination = new ArrayList<>();
@@ -86,6 +88,7 @@ public class Elevator implements Runnable {
         display.display(String.valueOf(currentFloor));
         destinationFloor = 0;
         numOfPassengers = 0;
+        shutdown = false;
         state = ElevatorStateEnum.IDLE; //elevator initialized to idle.
 
         for (int i = 0; i <= subsystem.getNumFloors(); i++){
@@ -114,7 +117,7 @@ public class Elevator implements Runnable {
      */
     @Override
     public void run() {
-        while(true){
+        while(!shutdown){
             if(requested.isEmpty()){
                 pause();
             }else {
@@ -133,7 +136,9 @@ public class Elevator implements Runnable {
     public synchronized void parseRequest(DatagramPacket packet){
         printPacketReceived(packet);
         int floorNum = packet.getData()[0];
-        lamps.get(floorNum - 1).turnOn();
+        if(floorNum != currentFloor){
+            lamps.get(floorNum - 1).turnOn();
+        }
         if((int)packet.getData()[2] != 0){
             switch(packet.getData()[2]){
                 case (byte) 1:
@@ -146,12 +151,9 @@ public class Elevator implements Runnable {
                         throw new RuntimeException(e);
                     }
                 case (byte) 2:
-                    try{
-                        logger.debug("FATAL ERROR DETECTED: CEASED OPERATION");
-                        Thread.sleep(100000000);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
+                    logger.debug("FATAL ERROR DETECTED: CEASED OPERATION");
+                    shutdown = true;
+                    return;
             }
         }
         requested.add(floorNum);
@@ -173,6 +175,13 @@ public class Elevator implements Runnable {
         state = ElevatorStateEnum.LOADING_UNLOADING;
         if(subsystem.getConfig().getNumFloors() > floorNum) {
             lamps.get(floorNum-1).turnOff();
+        }
+        //Sleep for necessary elevator loading time
+        logger.debug("Loading/unloading elevator " + id + " at floor " + currentFloor);
+        try {
+            Thread.sleep(subsystem.getConfig().getLoadingTime());
+        }catch(InterruptedException e){
+            throw new RuntimeException(e);
         }
     }
 
