@@ -134,8 +134,6 @@ public class Elevator implements Runnable {
         printPacketReceived(packet);
         int floorNum = packet.getData()[0];
         lamps.get(floorNum - 1).turnOn();
-        if(currentFloor!=floorNum){requested.add(floorNum);}
-        System.out.println("[port:"+port+" requests: "+ requested);
         if((int)packet.getData()[2] != 0){
             switch(packet.getData()[2]){
                 case (byte) 1:
@@ -156,7 +154,8 @@ public class Elevator implements Runnable {
                     }
             }
         }
-
+        requested.add(floorNum);
+        System.out.println("System test" + requested);
         notifyAll();
     }
 
