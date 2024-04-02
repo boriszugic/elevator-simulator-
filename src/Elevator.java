@@ -3,7 +3,6 @@ package src;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.io.IOException;
 import java.net.*;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,21 +13,13 @@ import java.util.List;
  * an elevator, with state and corresponding elevator subsystem.
  */
 public class Elevator implements Runnable {
-
-    // Constants
     private static final int MAX_NUM_OF_PASSENGERS = 10;
     private static final int SCHEDULER_PORT = 64;
-    //Logger utilized for debugging
     private final Logger logger;
-
-    // Static variables
     private static int nextPortNum = 66;
     private static int nextId = 1;
-
     @Getter
     private final int port;
-
-    // Instance variables
     @Getter
     private final int id;
     @Getter
@@ -70,27 +61,27 @@ public class Elevator implements Runnable {
      * and creates buttons/lamps/motor/door.
      *
      * @param subsystem The corresponding elevator subsystem.
-     * @param ID ID of the elevator to be constructed.
+     * @param id ID of the elevator to be constructed.
      */
-    public Elevator(ElevatorSubsystem subsystem, int ID) {
+    public Elevator(ElevatorSubsystem subsystem, int id) {
         this.port = nextPortNum;
         getNextPortNum();
         this.subsystem = subsystem;
-        this.id = ID;
+        this.id = id;
         motor = new Motor(this, subsystem.getConfig());
         door = new Door(subsystem.getConfig());
         display = new Display(this);
         currentFloor = 1;
-        display.display(String.valueOf(currentFloor));
+        //display.display(String.valueOf(currentFloor));
         destinationFloor = 0;
         numOfPassengers = 0;
-        state = ElevatorStateEnum.IDLE; //elevator initialized to idle.
+        state = ElevatorStateEnum.IDLE;
 
         for (int i = 1; i <= subsystem.getNumFloors(); i++){
             buttons.add(new ElevatorButton(i));
             lamps.add(new ElevatorLamp(i));
         }
-        this.logger = new Logger(System.getProperty("user.home") + "/elevator" + ID + ".log");
+        this.logger = new Logger(System.getProperty("user.home") + "/elevator" + id + ".log");
     }
 
     /**
@@ -141,7 +132,8 @@ public class Elevator implements Runnable {
 //            return isDirectionUp ? distance : -distance;
 //        }));
 
-        if((int)packet.getData()[2] != 0){
+        // TODO: Add detailed comments to explain the error handling logic
+        if(packet.getData()[2] != 0){
             switch(packet.getData()[2]){
                 case (byte) 1:
                     try{

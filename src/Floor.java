@@ -4,7 +4,6 @@ import lombok.Getter;
 
 import java.io.IOException;
 import java.net.*;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.LinkedList;
 
@@ -14,20 +13,15 @@ import java.util.LinkedList;
  * for inputs for a given file.
  */
 public class Floor implements Runnable {
-    //Static variables used to assign floor number/id
     private static int nextFloorNum = 1;
     private static int nextId= 1;
-    //Debug logger which tracks floor activity
     private final Logger logger;
-    //Constant utilized for scheduler port
     private final int SCHEDULER_PORT = 64;
-    //Instance variables
     @Getter
     private final int id;
     @Getter
     private final int floorNum;
     private int destFloor;
-    //UDP elements utilized for communication
     @Getter
     DatagramSocket socket;
     DatagramPacket receivePacket;
@@ -72,8 +66,8 @@ public class Floor implements Runnable {
      */
     @Override
     public void run() {
-
         LinkedList<RequestData> requests = FloorSubsystem.getRequests(this.getFloorNum());
+        logger.debug("All requests: \n" + requests);
 
         Calendar currentTime = Calendar.getInstance();
         while (!requests.isEmpty()) {
@@ -95,6 +89,7 @@ public class Floor implements Runnable {
      * @param buttonType The direction of the request (UP or DOWN)
      * @param floorNum   The floor number
      * @param port       The port number
+     * @param error The error code to be sent
      */
     private void sendRequest(Direction buttonType, int floorNum, int port, int error) {
         DatagramPacket packet = createPacket(buttonType, floorNum, port, error);
@@ -114,6 +109,7 @@ public class Floor implements Runnable {
      * @param buttonType The direction of the request (UP or DOWN)
      * @param floorNum   The floor number
      * @param port       The port number
+     * @param error The error code to be sent
      * @return DatagramPacket to be sent
      */
     public DatagramPacket createPacket(Direction buttonType, int floorNum, int port, int error) {
@@ -128,6 +124,7 @@ public class Floor implements Runnable {
             throw new RuntimeException(e);
         }
     }
+
     /** Creates packet to be sent by socket
      * Packet Format:
      * first byte : floor number
@@ -144,20 +141,16 @@ public class Floor implements Runnable {
             throw new RuntimeException(e);
         }
     }
+
     /**
      * Parses the received packet.
      *
      * @param packet The received packet
      */
     private void parseRequest(DatagramPacket packet) {
-
         logger.debug("Packet data: " + packet.getData()[0]);
-        switch (packet.getData()[0]) {
-            case 0: // open door
-                break;
-                default:
-                    board();
-                    break;
+        if (packet.getData()[0] != 0) {
+            board();
         }
     }
 

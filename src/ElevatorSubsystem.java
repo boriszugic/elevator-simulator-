@@ -20,7 +20,7 @@ import java.util.HashMap;
 public class ElevatorSubsystem implements Runnable{
     //Constants representing the scheduler and subsystem socket ports
     private static final int SCHEDULER_PORT = 64;
-    private static final int port = 65;
+    private static final int PORT = 65;
     //Hashmap containing references to each elevator
     @Getter
     private HashMap<Integer, Elevator> elevators;
@@ -34,6 +34,8 @@ public class ElevatorSubsystem implements Runnable{
     private final ConfigurationReader config;
     @Getter
     private int numFloors;
+    @Getter
+    ElevatorGUI gui;
 
     /**
      * Constructor which initializes socket for UDP communication with scheduler,
@@ -52,7 +54,7 @@ public class ElevatorSubsystem implements Runnable{
         this.logger = new Logger(System.getProperty("user.home") + "/elevator_subsystem.log");
         try {
             //Creates socket with port 65 for scheduler communication
-            socket = new DatagramSocket(port);
+            socket = new DatagramSocket(PORT);
         } catch (SocketException e) {
             logger.error("Error creating DatagramSocket");
             throw new RuntimeException("Error creating DatagramSocket", e);
@@ -68,6 +70,13 @@ public class ElevatorSubsystem implements Runnable{
         }
         //Inform scheduler that all elevators are initialized
         saveElevatorInScheduler(null);
+
+        gui = new ElevatorGUI(this);
+        for (int i = 1; i <= elevators.size(); i++){
+            elevators.get(i).getDisplay().setGui(gui);
+            elevators.get(i).getDisplay().display();
+        }
+        gui.setVisible(true);
     }
 
     /**
@@ -123,11 +132,8 @@ public class ElevatorSubsystem implements Runnable{
      * @param received The received DatagramPacket from the scheduler
      */
     public synchronized void sendElevatorPacket(DatagramPacket received){
-        int ID;
-        Elevator elevator;
-
-        ID = received.getData()[1];
-        elevator = elevators.get(ID-65);
+        int id = received.getData()[1];
+        Elevator elevator = elevators.get(id - PORT);
         elevator.parseRequest(received);
     }
 

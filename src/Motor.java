@@ -49,7 +49,7 @@ public class Motor {
             }
             elevator.setCurrentFloor(elevator.getCurrentFloor() +
                     (floorNum - elevator.getCurrentFloor() > 0 ? 1 : -1));
-            elevator.getDisplay().display(String.valueOf(elevator.getCurrentFloor()));
+            elevator.getDisplay().display();
         }
         //elevator.getState().Arrival();
     }

@@ -1,5 +1,7 @@
 package src;
 
+import lombok.Setter;
+
 /**
  * Utility class which binds a GUI to an elevator to display port number
  * and update based on floor location.
@@ -7,8 +9,8 @@ package src;
 public class Display {
     //The elevator to be displayed
     Elevator elevator;
-    private final GUI gui;
-
+    @Setter
+    ElevatorGUI gui;
     /**
      * Default constructor for display class which assigns a new GUI
      * to an elevator.
@@ -16,10 +18,9 @@ public class Display {
      */
     public Display(Elevator e){
         elevator = e;
-        gui = new GUI(e.getId(), e.getPort());
     }
 
-    public void display(String message) {
-        gui.display(message);
+    public void display() {
+        gui.updateElevatorDisplay(elevator.getId(), elevator.getState(), elevator.getCurrentFloor());
     }
 }
