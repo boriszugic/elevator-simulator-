@@ -31,13 +31,6 @@ class IdleState implements ElevatorState {
     }
 
     /**
-     * Method displaying the current state.
-     */
-    public void displayState() {
-        System.out.println(this);
-    }
-
-    /**
      * Method representing the elevator receiving an arrival notification
      * in the idle state.
      *
@@ -93,13 +86,6 @@ class Moving_up implements ElevatorState{
     public void requestReceived(ElevatorStateMachine context, String direction){}
 
     /**
-     * Method displaying the current state.
-     */
-    public void displayState(){
-        System.out.println(this);
-    }
-
-    /**
      * Method representing the elevator receiving an arrival notification
      * in the moving state.
      *
@@ -151,13 +137,6 @@ class Moving_down implements ElevatorState{
     public void requestReceived(ElevatorStateMachine context, String direction){}
 
     /**
-     * Method displaying the current state.
-     */
-    public void displayState(){
-        System.out.println(state);
-    }
-
-    /**
      * Method representing the elevator receiving an arrival notification
      * in the moving state.
      *
@@ -201,6 +180,7 @@ class Moving_down implements ElevatorState{
 class UnloadingLoading implements ElevatorState{
     private ElevatorStateMachine machine;
     public UnloadingLoading(ElevatorStateMachine state){this.machine = machine;}
+
     /**
      * Method representing the elevator receiving a request in the
      * unloading/loading state.
@@ -208,16 +188,7 @@ class UnloadingLoading implements ElevatorState{
      * @param context Current context of the state machine.
      */
     @Override
-    public void requestReceived(ElevatorStateMachine context, String direction){
-        context.setState(new UnloadingLoading(machine));
-    }
-
-    /**
-     * Method displaying the current state.
-     */
-    public void displayState(){
-        System.out.println(machine);
-    }
+    public void requestReceived(ElevatorStateMachine context, String direction){}
 
     /**
      * Method representing the elevator receiving an arrival notification

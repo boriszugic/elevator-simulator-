@@ -44,7 +44,6 @@ public class Motor {
             }catch(InterruptedException e) {
                 throw new RuntimeException(e);
             }
-            System.out.println("Elevator is at " + elevator.getCurrentFloor());
             //elevator.getDisplay().display(elevator.getCurrentFloor());
             return;
         }
@@ -66,8 +65,6 @@ public class Motor {
             elevator.setCurrentFloor(elevator.getCurrentFloor() +
                     (floorNum - elevator.getCurrentFloor() > 0 ? 1 : -1));
             elevator.getDisplay().display(String.valueOf(elevator.getCurrentFloor()));
-            System.out.println("Elevator moved to" + elevator.getCurrentFloor());
-
         }
         //elevator.getState().Arrival();
     }

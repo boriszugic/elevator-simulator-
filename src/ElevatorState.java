@@ -20,11 +20,6 @@ public interface ElevatorState {
     void Arrival(ElevatorStateMachine context);
 
     /**
-     * Displays the current state.
-     */
-    void displayState();
-
-    /**
      * The current state receives a notification to move to the next request.
      *
      * @param context Current context of the state machine.

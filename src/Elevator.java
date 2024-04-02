@@ -119,10 +119,10 @@ public class Elevator implements Runnable {
                 pause();
             }else {
                 int floorNum = requested.removeFirst();
-                System.out.println("Elevator MOVING TO " + floorNum);
                 state = (this.currentFloor >= floorNum) ? ElevatorStateEnum.MOVING_DOWN : ElevatorStateEnum.MOVING_UP;
                 move(floorNum);
                 sendUpdate();
+                state = ElevatorStateEnum.IDLE;
             }
         }
     }
@@ -155,7 +155,6 @@ public class Elevator implements Runnable {
             }
         }
         requested.add(floorNum);
-        System.out.println("System test" + requested);
         notifyAll();
     }
 
@@ -169,7 +168,6 @@ public class Elevator implements Runnable {
         door.close();
         logger.debug("Moving to floor " + floorNum + " from currentFloor " + currentFloor);
         motor.move(floorNum, passengerDestination);
-        //requested.removeFirst();
         logger.debug("Opening doors of elevator " + id + " at floor " + currentFloor);
         door.open();
         state = ElevatorStateEnum.LOADING_UNLOADING;
