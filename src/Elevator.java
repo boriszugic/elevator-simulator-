@@ -3,33 +3,21 @@ package src;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.io.IOException;
 import java.net.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Comparator;
+import java.util.*;
 
 /**
  * Elevator class which implements a single Thread representing
  * an elevator, with state and corresponding elevator subsystem.
  */
 public class Elevator implements Runnable {
-
-    // Constants
     private static final int MAX_NUM_OF_PASSENGERS = 10;
     private static final int SCHEDULER_PORT = 64;
-    //Logger utilized for debugging
     private final Logger logger;
-
-    // Static variables
     private static int nextPortNum = 66;
     private static int nextId = 1;
-
     @Getter
     private final int port;
-
-    // Instance variables
     @Getter
     private final int id;
     @Getter
@@ -50,12 +38,15 @@ public class Elevator implements Runnable {
     @Getter
     private int numOfPassengers;
     @Getter
-    private ElevatorStateEnum state;
-
+    private Calendar firstRequestTimestamp;
+    @Getter
+    private Calendar lastCompletedRequestTimestamp;
+    @Getter
+    private ElevatorStateMachine state;
     private boolean shutdown;
 
     //Queue of current requests
-    private ArrayList<Integer> requested = new ArrayList<>();
+    PriorityQueue<Integer> requested = new PriorityQueue<>();
     private ArrayList<Integer> passengerDestination = new ArrayList<>();
 
     //Reference to subsystem utilized for synchronization
@@ -74,28 +65,30 @@ public class Elevator implements Runnable {
      * and creates buttons/lamps/motor/door.
      *
      * @param subsystem The corresponding elevator subsystem.
-     * @param ID ID of the elevator to be constructed.
+     * @param id ID of the elevator to be constructed.
      */
-    public Elevator(ElevatorSubsystem subsystem, int ID) {
+    public Elevator(ElevatorSubsystem subsystem, int id) {
         this.port = nextPortNum;
         getNextPortNum();
         this.subsystem = subsystem;
-        this.id = ID;
+        this.id = id;
         motor = new Motor(this, subsystem.getConfig());
         door = new Door(subsystem.getConfig());
         display = new Display(this);
         currentFloor = 1;
-        display.display(String.valueOf(currentFloor));
         destinationFloor = 0;
         numOfPassengers = 0;
         shutdown = false;
-        state = ElevatorStateEnum.IDLE; //elevator initialized to idle.
+        firstRequestTimestamp = null;
+        lastCompletedRequestTimestamp = null;
+        state = new ElevatorStateMachine();
+        state.setState(new IdleState(state));//elevator initialized to idle.
 
         for (int i = 0; i <= subsystem.getNumFloors(); i++){
             buttons.add(new ElevatorButton(i));
             lamps.add(new ElevatorLamp(i));
         }
-        this.logger = new Logger(System.getProperty("user.home") + "/elevator" + ID + ".log");
+        this.logger = new Logger(System.getProperty("user.home") + "/elevator" + id + ".log");
     }
 
     /**
@@ -117,15 +110,25 @@ public class Elevator implements Runnable {
      */
     @Override
     public void run() {
+        int i = 0;
         while(!shutdown){
             if(requested.isEmpty()){
+                state.setState(new IdleState(state));
                 pause();
-            }else {
-                int floorNum = requested.removeFirst();
-                state = (this.currentFloor >= floorNum) ? ElevatorStateEnum.MOVING_DOWN : ElevatorStateEnum.MOVING_UP;
+            }else{
+                if (i == 0) {
+                    firstRequestTimestamp = Calendar.getInstance();
+                    i = 1;
+                }
+                int floorNum = requested.poll();
+                System.out.println(Arrays.toString(requested.toArray()));
+                System.out.println(floorNum);
+                state.setState((this.currentFloor >= floorNum) ?
+                               new Moving_down(state) :
+                               new Moving_up(state));
                 move(floorNum);
+                lastCompletedRequestTimestamp = Calendar.getInstance();
                 sendUpdate();
-                state = ElevatorStateEnum.IDLE;
             }
         }
     }
@@ -139,7 +142,7 @@ public class Elevator implements Runnable {
         if(floorNum != currentFloor){
             lamps.get(floorNum - 1).turnOn();
         }
-        if((int)packet.getData()[2] != 0){
+        if(packet.getData()[2] != 0){
             switch(packet.getData()[2]){
                 case (byte) 1:
                     try{
@@ -152,6 +155,8 @@ public class Elevator implements Runnable {
                     }
                 case (byte) 2:
                     logger.debug("FATAL ERROR DETECTED: CEASED OPERATION");
+                    state.setState(new FaultState(state));
+                    this.getDisplay().display();
                     shutdown = true;
                     return;
             }
@@ -166,23 +171,27 @@ public class Elevator implements Runnable {
      * @param floorNum floor number to move to
      */
     public void move(int floorNum){
-        logger.debug("Closing door of elevator:" + id);
+        logger.debug("Closing doors at floor " + currentFloor);
         door.close();
-        logger.debug("Moving to floor " + floorNum + " from currentFloor " + currentFloor);
+        logger.debug("Moving to floor " + floorNum + " from floor " + currentFloor);
         motor.move(floorNum, passengerDestination);
-        logger.debug("Opening doors of elevator " + id + " at floor " + currentFloor);
+        logger.debug("Opening doors at floor " + currentFloor);
         door.open();
-        state = ElevatorStateEnum.LOADING_UNLOADING;
         if(subsystem.getConfig().getNumFloors() > floorNum) {
             lamps.get(floorNum-1).turnOff();
         }
+        logger.debug("Loading/unloading elevator at floor " + currentFloor);
+        state.setState(new UnloadingLoading(state));
+        this.getDisplay().display();
         //Sleep for necessary elevator loading time
-        logger.debug("Loading/unloading elevator " + id + " at floor " + currentFloor);
         try {
             Thread.sleep(subsystem.getConfig().getLoadingTime());
         }catch(InterruptedException e){
             throw new RuntimeException(e);
         }
+        state.setState(new IdleState(state));
+        this.getDisplay().display();
+
     }
 
     /**

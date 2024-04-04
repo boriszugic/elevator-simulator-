@@ -2,8 +2,7 @@ package src;
 
 import java.util.concurrent.TimeUnit;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+
 /**
  * Class representing the motor of an elevator which takes as input
  * a configuration file with the given speed of movement between floors.
@@ -44,7 +43,6 @@ public class Motor {
             }catch(InterruptedException e) {
                 throw new RuntimeException(e);
             }
-            //elevator.getDisplay().display(elevator.getCurrentFloor());
             return;
         }
         /* -- solution for edge case of dropping off passenger inbetween a request - incomplete
@@ -64,7 +62,7 @@ public class Motor {
             }
             elevator.setCurrentFloor(elevator.getCurrentFloor() +
                     (floorNum - elevator.getCurrentFloor() > 0 ? 1 : -1));
-            elevator.getDisplay().display(String.valueOf(elevator.getCurrentFloor()));
+            elevator.getDisplay().display();
         }
         //elevator.getState().Arrival();
     }

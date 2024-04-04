@@ -22,17 +22,15 @@ public class Scheduler implements Runnable{
     @Getter
     private HashMap<Integer, ElevatorStructure> elevators;
     @Getter
-    private SchedulerStateEnum state;
-
-    //public ElevatorStateMachine elevatorStateMachine   = new ElevatorStateMachine();
-
+    private SchedulerStateMachine state;
     private ArrayList<DatagramPacket> requestQueue;
 
     /**
      * Private constructor to prevent instantiation from outside the class.
      */
     private Scheduler() {
-        state = SchedulerStateEnum.IDLE; //Initialize scheduler in IDLE state
+        state = new SchedulerStateMachine();
+        state.setState(new Idle()); //Initialize scheduler in IDLE state
         try {
             this.socket = new DatagramSocket(port);
             this.elevators = new HashMap<>();
@@ -49,7 +47,7 @@ public class Scheduler implements Runnable{
      * SchedulerTests.Java for JUnit4 testing
      */
     public Scheduler(String test) {
-        state = SchedulerStateEnum.IDLE; //Initialize scheduler in IDLE state
+        state.setState(new Idle()); //Initialize scheduler in IDLE state
         socket = null;
         this.elevators = new HashMap<>();
         this.floors = new HashMap<>();
@@ -85,8 +83,6 @@ public class Scheduler implements Runnable{
      * to model each elevator and floor instance.
      */
     private static void initializeFloorsAndElevators() {
-        //ElevatorStateMachine elevatorStateMachine = new ElevatorStateMachine();
-
         boolean isFloorInitDone = false, isElevatorInitDone = false;
 
         while (!isFloorInitDone || !isElevatorInitDone){
@@ -185,7 +181,7 @@ public class Scheduler implements Runnable{
      */
     public DatagramPacket parseRequest(DatagramPacket packet){
         byte[] data = packet.getData();
-        state = SchedulerStateEnum.SCHEDULING;
+        state.setState(new Scheduling());
         if (packet.getLength() == 3 && data[2] == 0){ // Elevator response
             return scheduleRequest(packet);
         }
@@ -212,6 +208,7 @@ public class Scheduler implements Runnable{
         elevators.get((int)data[0]).setCurrFloor(data[1]);
         return createFloorPacket(updateData, packet.getData()[1]);
     }
+
     /** Handles floor requests for an elevator
      *
      * @param packet The DatagramPacket that is received
@@ -221,12 +218,16 @@ public class Scheduler implements Runnable{
         byte[] data = packet.getData();
         printPacketReceived(packet,"Floor");
         // Choose elevator
-        ElevatorStructure elevator = chooseElevator((data[0] == 0 ? Direction.DOWN : Direction.UP), data[1]);
+        ElevatorStructure elevator = chooseElevator((data[0] == 0 ?
+                                                    Direction.DOWN :
+                                                    Direction.UP),
+                                                    data[1]);
         // Assign floor the chosen elevator
         int floorNum = data[1];
         floors.get((int) data[1]).setElevatorPort(elevator.getPort());
         return createElevatorPacket(floorNum, elevator.getPort(), data[3]);
     }
+
     /** Handles destination requests from floor to elevator
      *
      * @param packet The DatagramPacket that is received
@@ -238,8 +239,9 @@ public class Scheduler implements Runnable{
         printPacketReceived(packet, "Floor");
         int floorNum = data[0];
         // Create a packet to elevator port assigned to floor in the if statement above
-        DatagramPacket returnPacket = createElevatorPacket(floorNum, floors.get((int)data[1]).getElevatorPort(), 0);
-        return returnPacket;
+        return createElevatorPacket(floorNum,
+                                    floors.get((int)data[1]).getElevatorPort(),
+                              0);
     }
 
     /**
@@ -278,25 +280,18 @@ public class Scheduler implements Runnable{
         // Set the new state of Scheduler's copy (Elevator will set its own)
         if(suitableElevator.isPresent()) {
             ElevatorStateMachine stateMachine = suitableElevator.get().getState();
-
             if (suitableElevator.get().getCurrFloor() - floorNum != 0) {
-                ElevatorState newState = suitableElevator.get().getCurrFloor() > floorNum ?
-                                                                                new Moving_up(stateMachine) :
-                                                                                new Moving_down(stateMachine);
+                ElevatorState newState = suitableElevator.get().getCurrFloor() >
+                        floorNum ?
+                        new Moving_up(stateMachine) :
+                        new Moving_down(stateMachine);
                 stateMachine.setState(newState);
-                /*
-                suitableElevator.get().setState((suitableElevator.get().getCurrFloor() > floorNum) ?
-                        ElevatorStateEnum.MOVING_DOWN :
-                        ElevatorStateEnum.MOVING_UP);
-                        */
-
-                logger.debug("Chose Elevator " + suitableElevator.get().getId());
             }
-
         }
         else{
             return elevs.getFirst();
         }
+        logger.debug("Chose Elevator " + suitableElevator.get().getId());
         return suitableElevator.get(); // Return the found elevator
     }
 
@@ -323,22 +318,26 @@ public class Scheduler implements Runnable{
     }
 
     /**
-     * Creates a DatagramPacket with the necessary information for the scheduler.
-     * Formatted to be sent to Elevator subsystem
-     * The packet contains the floor number and direction.
-     * @param floorNum  The floor number
-     * @return The created DatagramPacket
+     * Creates a {@code DatagramPacket} formatted to be sent to the Elevator subsystem.
+     * The packet contains the floor number, elevator ID, and an error code, encapsulated within
+     * the byte array of the packet.
+     *
+     * @param floorNum The floor number to be sent to the Elevator subsystem.
+     * @param id The identifier for the elevator to which this packet is addressed.
+     * @param error The error code to be sent, representing any potential issues or status updates.
+     * @return The created {@code DatagramPacket} containing the floor number, elevator ID, and error code.
+     * @throws RuntimeException If there is an error in creating the packet due to an unknown host.
      */
-    public DatagramPacket createElevatorPacket(int floorNum, int ID, int error){
+    public DatagramPacket createElevatorPacket(int floorNum, int id, int error){
         try {
             byte[] data = new byte[3];
             data[0] = (byte) floorNum;
-            data[1] = (byte) ID;
+            data[1] = (byte) id;
             data[2] = (byte) error;
-            if(error==2){
-                ElevatorStateMachine tempStateMachine = elevators.get(ID).getState();
+            if(error == 2){
+                ElevatorStateMachine tempStateMachine = elevators.get(id).getState();
                 tempStateMachine.setState(new FaultState(tempStateMachine));
-                elevators.get(ID).setState(tempStateMachine);
+                elevators.get(id).setState(tempStateMachine);
             }
             return new DatagramPacket(data, data.length,
                     InetAddress.getLocalHost(), elevator_port);
@@ -349,12 +348,14 @@ public class Scheduler implements Runnable{
     }
 
     /**
-     * Creates a DatagramPacket with the necessary information for the scheduler.
-     * Formatted to be sent to Floor subsystem
-     * The packet contains the Elevator UPDATETYPE.
+     * Creates a {@code DatagramPacket} formatted to be sent to the Floor subsystem
+     * which contains the Elevator {@code UPDATETYPE}. This method constructs the packet
+     * using the specified data and destination port.
      *
-     * @param data  The byte array of data received from Elevator
-     * @return The created DatagramPacket
+     * @param data The byte array of data received from the Elevator to be wrapped in the packet.
+     * @param port The destination port number where the packet is to be sent.
+     * @return The created {@code DatagramPacket} ready to be sent to the Floor subsystem.
+     * @throws RuntimeException If there is an error in creating the packet due to an unknown host.
      */
     public DatagramPacket createFloorPacket(byte[] data,int port){
         try {
@@ -372,7 +373,7 @@ public class Scheduler implements Runnable{
      * @param packet The packet to be sent
      */
     private void sendRequest(DatagramPacket packet){
-        state = SchedulerStateEnum.IDLE;
+        state.setState(new Idle());
         try {
             printPacketRequest(packet);
             socket.send(packet);
