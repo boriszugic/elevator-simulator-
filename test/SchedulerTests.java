@@ -34,6 +34,7 @@ public class SchedulerTests {
      * Initialize the testing environment with the default
      * parameters for a scheduler.
      */
+    /*
     @Before
     public void setUp(){
         scheduler = new Scheduler("test");
@@ -44,6 +45,7 @@ public class SchedulerTests {
             scheduler.addFloor(new FloorStructure(i, i));
         }
     }
+    */
 
     /**
      * This method tests whether the default parameters of the

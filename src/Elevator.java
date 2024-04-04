@@ -8,6 +8,7 @@ import java.net.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Comparator;
 
 /**
  * Elevator class which implements a single Thread representing
@@ -51,8 +52,11 @@ public class Elevator implements Runnable {
     @Getter
     private ElevatorStateEnum state;
 
+    private boolean shutdown;
+
     //Queue of current requests
     private ArrayList<Integer> requested = new ArrayList<>();
+    private ArrayList<Integer> passengerDestination = new ArrayList<>();
 
     //Reference to subsystem utilized for synchronization
     private ElevatorSubsystem subsystem;
@@ -84,9 +88,10 @@ public class Elevator implements Runnable {
         display.display(String.valueOf(currentFloor));
         destinationFloor = 0;
         numOfPassengers = 0;
+        shutdown = false;
         state = ElevatorStateEnum.IDLE; //elevator initialized to idle.
 
-        for (int i = 1; i <= subsystem.getNumFloors(); i++){
+        for (int i = 0; i <= subsystem.getNumFloors(); i++){
             buttons.add(new ElevatorButton(i));
             lamps.add(new ElevatorLamp(i));
         }
@@ -112,7 +117,7 @@ public class Elevator implements Runnable {
      */
     @Override
     public void run() {
-        while(true){
+        while(!shutdown){
             if(requested.isEmpty()){
                 pause();
             }else {
@@ -120,6 +125,7 @@ public class Elevator implements Runnable {
                 state = (this.currentFloor >= floorNum) ? ElevatorStateEnum.MOVING_DOWN : ElevatorStateEnum.MOVING_UP;
                 move(floorNum);
                 sendUpdate();
+                state = ElevatorStateEnum.IDLE;
             }
         }
     }
@@ -130,36 +136,27 @@ public class Elevator implements Runnable {
     public synchronized void parseRequest(DatagramPacket packet){
         printPacketReceived(packet);
         int floorNum = packet.getData()[0];
-        requested.add(floorNum);
-        lamps.get(floorNum-1).turnOn();
-        if(currentFloor!=floorNum){requested.add(floorNum);}
-
-        /**Request sorting algorithm --incomplete **/
-//        requested.sort(Comparator.comparingInt(floor -> {
-//            int distance = Math.abs(floor - currentFloor);
-//            boolean isDirectionUp = floor > currentFloor;
-//            return isDirectionUp ? distance : -distance;
-//        }));
-
+        if(floorNum != currentFloor){
+            lamps.get(floorNum - 1).turnOn();
+        }
         if((int)packet.getData()[2] != 0){
             switch(packet.getData()[2]){
                 case (byte) 1:
                     try{
                         logger.debug("TRANSIENT ERROR DETECTED: PAUSED");
                         Thread.sleep(10000);
+                        logger.debug("TRANSIENT ERROR RESOLVED: CONTINUING");
                         break;
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
                 case (byte) 2:
-                    try{
-                        logger.debug("FATAL ERROR DETECTED: CEASED OPERATION");
-                        Thread.sleep(100000000);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
+                    logger.debug("FATAL ERROR DETECTED: CEASED OPERATION");
+                    shutdown = true;
+                    return;
             }
         }
+        requested.add(floorNum);
         notifyAll();
     }
 
@@ -172,12 +169,19 @@ public class Elevator implements Runnable {
         logger.debug("Closing door of elevator:" + id);
         door.close();
         logger.debug("Moving to floor " + floorNum + " from currentFloor " + currentFloor);
-        motor.move(floorNum);
-        logger.debug("Opening door of elevator:" + id);
+        motor.move(floorNum, passengerDestination);
+        logger.debug("Opening doors of elevator " + id + " at floor " + currentFloor);
         door.open();
         state = ElevatorStateEnum.LOADING_UNLOADING;
         if(subsystem.getConfig().getNumFloors() > floorNum) {
             lamps.get(floorNum-1).turnOff();
+        }
+        //Sleep for necessary elevator loading time
+        logger.debug("Loading/unloading elevator " + id + " at floor " + currentFloor);
+        try {
+            Thread.sleep(subsystem.getConfig().getLoadingTime());
+        }catch(InterruptedException e){
+            throw new RuntimeException(e);
         }
     }
 
@@ -185,7 +189,7 @@ public class Elevator implements Runnable {
      * Sends an update packet to the Scheduler indicating that the doors are open.
      * This method creates a packet with the specified update type and sends it through the socket.
      */
-    private void sendUpdate() {
+    public void sendUpdate() {
         subsystem.sendSchedulerPacket(createPacket(UpdateType.OPEN_DOORS));
     }
 
