@@ -167,7 +167,6 @@ public class Scheduler implements Runnable{
         DatagramPacket receivedPacket = new DatagramPacket(new byte[4], 4);
         try {
             socket.receive(receivedPacket);
-            System.out.println(receivedPacket);
             return receivedPacket;
         } catch (IOException e) {
             socket.close();

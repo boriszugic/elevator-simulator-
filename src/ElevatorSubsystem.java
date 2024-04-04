@@ -67,6 +67,7 @@ public class ElevatorSubsystem implements Runnable{
         gui = new ElevatorGUI(this);
         for (int i = 1; i <= elevators.size(); i++){
             elevators.get(i).getDisplay().setGui(gui);
+            elevators.get(i).getDisplay().display();
         }
         gui.setVisible(true);
     }

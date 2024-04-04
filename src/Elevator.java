@@ -4,9 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.net.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * Elevator class which implements a single Thread representing
@@ -40,11 +38,15 @@ public class Elevator implements Runnable {
     @Getter
     private int numOfPassengers;
     @Getter
+    private Calendar firstRequestTimestamp;
+    @Getter
+    private Calendar lastCompletedRequestTimestamp;
+    @Getter
     private ElevatorStateMachine state;
     private boolean shutdown;
 
     //Queue of current requests
-    private ArrayList<Integer> requested = new ArrayList<>();
+    PriorityQueue<Integer> requested = new PriorityQueue<>();
     private ArrayList<Integer> passengerDestination = new ArrayList<>();
 
     //Reference to subsystem utilized for synchronization
@@ -77,6 +79,8 @@ public class Elevator implements Runnable {
         destinationFloor = 0;
         numOfPassengers = 0;
         shutdown = false;
+        firstRequestTimestamp = null;
+        lastCompletedRequestTimestamp = null;
         state = new ElevatorStateMachine();
         state.setState(new IdleState(state));//elevator initialized to idle.
 
@@ -106,17 +110,25 @@ public class Elevator implements Runnable {
      */
     @Override
     public void run() {
+        int i = 0;
         while(!shutdown){
             if(requested.isEmpty()){
+                state.setState(new IdleState(state));
                 pause();
-            }else {
-                int floorNum = requested.removeFirst();
+            }else{
+                if (i == 0) {
+                    firstRequestTimestamp = Calendar.getInstance();
+                    i = 1;
+                }
+                int floorNum = requested.poll();
+                System.out.println(Arrays.toString(requested.toArray()));
+                System.out.println(floorNum);
                 state.setState((this.currentFloor >= floorNum) ?
                                new Moving_down(state) :
                                new Moving_up(state));
                 move(floorNum);
+                lastCompletedRequestTimestamp = Calendar.getInstance();
                 sendUpdate();
-                state.setState(new IdleState(state));
             }
         }
     }

@@ -79,7 +79,7 @@ public class Floor implements Runnable {
             }
             printRequestInfo(request);
             sendRequest(request.getDirection(), this.floorNum, id, request.getError());
-            if(!(request.getError() == 2)){
+            if(request.getError() != 2){
                 waitRequest();
             }
         }
