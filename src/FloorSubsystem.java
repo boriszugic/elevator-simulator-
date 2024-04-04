@@ -56,7 +56,6 @@ public class FloorSubsystem {
                     System.err.println("Invalid input format: " + line);
                 }
             }
-            System.out.println(dataArray);
             // store info of each floor in scheduler
             for (int i = 0; i < config.getNumFloors(); i++){
                 Floor floor = new Floor();

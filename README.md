@@ -47,8 +47,8 @@ this issue will be fixed in the next iteration.
 
 - Iteration 2:
     - UML Class and Sequence Diagrams:
-      - Nitin Alagu: UML Class Diagram
-      - Cole McPherson: Elevator State Diagram
+      - Nitin Alagu: Updated UML Class Diagram
+      - Cole McPherson: Updated Sequence, State Diagram
     - Coding:
       - Boris Zugic: UDP Communication (Elevator/Scheduler/Floor), Display
       - Cole McPherson: Elevator State Machine (ElevatorState, ElevatorStateMachine, etc)
@@ -63,7 +63,7 @@ this issue will be fixed in the next iteration.
       - Cole McPherson: Elevator/Scheduler State Diagrams
       - Evan Baldwin: Updated Elevator/Scheduler State Diagrams, UML Class Diagram
     - Coding:
-      - Boris Zugic: GUI implementation, Logger, Input file parsing
+      - Boris Zugic: GUI, Logger, Input file parsing
       - Cole McPherson: 
       - Johnny Nguyen: Scheduler algorithms, UDP Communication
       - Nitin Alagu:
@@ -77,10 +77,10 @@ this issue will be fixed in the next iteration.
       - 
     - Coding:
       - Boris Zugic: Elevator Selection Algorithm
-      - Cole McPherson: UDP Communication, Scheduler 
-      - Johnny Nguyen: Scheduler Communication/Logic, UDP Parsing
+      - Cole McPherson: UDP Communication, Schedule/Scheduler Request Communication with Elevators
+      - Johnny Nguyen: Scheduler Communication/Logic, Parsing
       - Nitin Alagu:
-      - Evan Baldwin: Elevator threading/subsystem, Scheduler, UDP Communication, Error injection/elevator response
+      - Evan Baldwin: Elevator threading/subsystem, UDP Communication, Error injection/elevator response, Communication Help
     - Unit Testing:
       - Evan Baldwin: Updated Elevator tests, new Scheduler tests
 
