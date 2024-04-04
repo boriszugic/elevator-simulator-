@@ -7,10 +7,10 @@ import lombok.Setter;
  * and update based on floor location.
  */
 public class Display {
-    //The elevator to be displayed
     Elevator elevator;
     @Setter
     ElevatorGUI gui;
+
     /**
      * Default constructor for display class which assigns a new GUI
      * to an elevator.

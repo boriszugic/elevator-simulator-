@@ -22,14 +22,15 @@ public class Scheduler implements Runnable{
     @Getter
     private HashMap<Integer, ElevatorStructure> elevators;
     @Getter
-    private SchedulerStateEnum state;
+    private SchedulerStateMachine state;
     private ArrayList<DatagramPacket> requestQueue;
 
     /**
      * Private constructor to prevent instantiation from outside the class.
      */
     private Scheduler() {
-        state = SchedulerStateEnum.IDLE; //Initialize scheduler in IDLE state
+        state = new SchedulerStateMachine();
+        state.setState(new Idle()); //Initialize scheduler in IDLE state
         try {
             this.socket = new DatagramSocket(port);
             this.elevators = new HashMap<>();
@@ -46,7 +47,7 @@ public class Scheduler implements Runnable{
      * SchedulerTests.Java for JUnit4 testing
      */
     public Scheduler(String test) {
-        state = SchedulerStateEnum.IDLE; //Initialize scheduler in IDLE state
+        state.setState(new Idle()); //Initialize scheduler in IDLE state
         socket = null;
         this.elevators = new HashMap<>();
         this.floors = new HashMap<>();
@@ -68,7 +69,7 @@ public class Scheduler implements Runnable{
         printFloorAndElevatorInfo(scheduler);
 
         try {
-            TimeUnit.SECONDS.sleep(3);
+            TimeUnit.SECONDS.sleep(1);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -105,9 +106,10 @@ public class Scheduler implements Runnable{
                     break;
                 // elevator init
                 case 3:
+                    ElevatorStateMachine elevatorStateMachine   = new ElevatorStateMachine();
                     Scheduler.getInstance().getElevators().put((int) data[2],new ElevatorStructure(
-                                                               data[0], ElevatorStateEnum.IDLE,
-                                                               data[1], data[2]));
+                            data[0], elevatorStateMachine,
+                            data[1], data[2]));
                     logger.debug("---- ADDED ELEVATOR ----");
                     break;
                 default:
@@ -117,7 +119,7 @@ public class Scheduler implements Runnable{
         }
         try {
             Scheduler.getInstance().getSocket().send(new DatagramPacket(new byte[]{1}, 1,
-                                                     InetAddress.getLocalHost(), 150));
+                    InetAddress.getLocalHost(), 150));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -180,7 +182,7 @@ public class Scheduler implements Runnable{
      */
     public DatagramPacket parseRequest(DatagramPacket packet){
         byte[] data = packet.getData();
-        state = SchedulerStateEnum.SCHEDULING;
+        state.setState(new Scheduling());
         if (packet.getLength() == 3 && data[2] == 0){ // Elevator response
             return scheduleRequest(packet);
         }
@@ -217,10 +219,12 @@ public class Scheduler implements Runnable{
         byte[] data = packet.getData();
         printPacketReceived(packet,"Floor");
         // Choose elevator
-        ElevatorStructure elevator = chooseElevator((data[0] == 0 ? Direction.DOWN : Direction.UP), data[1]);
+        ElevatorStructure elevator = chooseElevator((data[0] == 0 ?
+                                                    Direction.DOWN :
+                                                    Direction.UP),
+                                                    data[1]);
         // Assign floor the chosen elevator
         int floorNum = data[1];
-
         floors.get((int) data[1]).setElevatorPort(elevator.getPort());
         return createElevatorPacket(floorNum, elevator.getPort(), data[3]);
     }
@@ -236,9 +240,9 @@ public class Scheduler implements Runnable{
         printPacketReceived(packet, "Floor");
         int floorNum = data[0];
         // Create a packet to elevator port assigned to floor in the if statement above
-        DatagramPacket returnPacket = createElevatorPacket(floorNum, floors.get((int)data[1]).getElevatorPort(), 0);
-        elevators.get(floors.get((int)data[1]).getElevatorPort()).setState(ElevatorStateEnum.IDLE);
-        return returnPacket;
+        return createElevatorPacket(floorNum,
+                                    floors.get((int)data[1]).getElevatorPort(),
+                              0);
     }
 
     /**
@@ -276,16 +280,19 @@ public class Scheduler implements Runnable{
                 .findFirst();
         // Set the new state of Scheduler's copy (Elevator will set its own)
         if(suitableElevator.isPresent()) {
+            ElevatorStateMachine stateMachine = suitableElevator.get().getState();
             if (suitableElevator.get().getCurrFloor() - floorNum != 0) {
-                suitableElevator.get().setState((suitableElevator.get().getCurrFloor() > floorNum) ?
-                        ElevatorStateEnum.MOVING_DOWN :
-                        ElevatorStateEnum.MOVING_UP);
-                logger.debug("Chose Elevator " + suitableElevator.get().getId());
+                ElevatorState newState = suitableElevator.get().getCurrFloor() >
+                        floorNum ?
+                        new Moving_up(stateMachine) :
+                        new Moving_down(stateMachine);
+                stateMachine.setState(newState);
             }
         }
         else{
             return elevs.getFirst();
         }
+        logger.debug("Chose Elevator " + suitableElevator.get().getId());
         return suitableElevator.get(); // Return the found elevator
     }
 
@@ -299,12 +306,12 @@ public class Scheduler implements Runnable{
      * @return True if elevator is suitable, false otherwise
      */
     private boolean isElevatorSuitable(ElevatorStructure elevator, Direction direction, int floorNum) {
-        switch (elevator.getState()) {
-            case IDLE:
+        switch(elevator.getState().getState().toString()) {
+            case "Idle":
                 return true; // An idle elevator is always suitable
-            case MOVING_UP:
+            case "Moving_up":
                 return direction == Direction.UP && elevator.getCurrFloor() <= floorNum;
-            case MOVING_DOWN:
+            case "Moving_down":
                 return direction == Direction.DOWN && elevator.getCurrFloor() >= floorNum;
             default:
                 return false; // If the elevator is in a state that doesn't allow it to take new requests
@@ -328,8 +335,13 @@ public class Scheduler implements Runnable{
             data[0] = (byte) floorNum;
             data[1] = (byte) id;
             data[2] = (byte) error;
+            if(error == 2){
+                ElevatorStateMachine tempStateMachine = elevators.get(id).getState();
+                tempStateMachine.setState(new FaultState(tempStateMachine));
+                elevators.get(id).setState(tempStateMachine);
+            }
             return new DatagramPacket(data, data.length,
-                                      InetAddress.getLocalHost(), elevator_port);
+                    InetAddress.getLocalHost(), elevator_port);
         } catch (UnknownHostException e) {
             logger.error("Error creating elevator packet.");
             throw new RuntimeException("Error creating elevator packet.");
@@ -362,25 +374,13 @@ public class Scheduler implements Runnable{
      * @param packet The packet to be sent
      */
     private void sendRequest(DatagramPacket packet){
-        state = SchedulerStateEnum.IDLE;
+        state.setState(new Idle());
         try {
             printPacketRequest(packet);
             socket.send(packet);
         } catch (IOException e) {
             logger.error("Caught an exception trying to send packet.");
             throw new RuntimeException("Caught an exception trying to send packet.");
-        }
-    }
-
-    /**
-     * Attempts to close the current socket utilized
-     * by the scheduler.
-     */
-    public void close(){
-        try{
-            socket.close();
-        } catch(Exception e){
-            e.printStackTrace();
         }
     }
 

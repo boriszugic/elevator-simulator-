@@ -40,10 +40,12 @@ public class Elevator implements Runnable {
     @Getter
     private int numOfPassengers;
     @Getter
-    private ElevatorStateEnum state;
+    private ElevatorStateMachine state;
+    private boolean shutdown;
 
     //Queue of current requests
     private ArrayList<Integer> requested = new ArrayList<>();
+    private ArrayList<Integer> passengerDestination = new ArrayList<>();
 
     //Reference to subsystem utilized for synchronization
     private ElevatorSubsystem subsystem;
@@ -72,12 +74,13 @@ public class Elevator implements Runnable {
         door = new Door(subsystem.getConfig());
         display = new Display(this);
         currentFloor = 1;
-        //display.display(String.valueOf(currentFloor));
         destinationFloor = 0;
         numOfPassengers = 0;
-        state = ElevatorStateEnum.IDLE;
+        shutdown = false;
+        state = new ElevatorStateMachine();
+        state.setState(new IdleState(state));//elevator initialized to idle.
 
-        for (int i = 1; i <= subsystem.getNumFloors(); i++){
+        for (int i = 0; i <= subsystem.getNumFloors(); i++){
             buttons.add(new ElevatorButton(i));
             lamps.add(new ElevatorLamp(i));
         }
@@ -103,14 +106,17 @@ public class Elevator implements Runnable {
      */
     @Override
     public void run() {
-        while(true){
+        while(!shutdown){
             if(requested.isEmpty()){
                 pause();
             }else {
                 int floorNum = requested.removeFirst();
-                state = (this.currentFloor >= floorNum) ? ElevatorStateEnum.MOVING_DOWN : ElevatorStateEnum.MOVING_UP;
+                state.setState((this.currentFloor >= floorNum) ?
+                               new Moving_down(state) :
+                               new Moving_up(state));
                 move(floorNum);
                 sendUpdate();
+                state.setState(new IdleState(state));
             }
         }
     }
@@ -121,37 +127,29 @@ public class Elevator implements Runnable {
     public synchronized void parseRequest(DatagramPacket packet){
         printPacketReceived(packet);
         int floorNum = packet.getData()[0];
-        requested.add(floorNum);
-        lamps.get(floorNum-1).turnOn();
-        if(currentFloor!=floorNum){requested.add(floorNum);}
-
-        /**Request sorting algorithm --incomplete **/
-//        requested.sort(Comparator.comparingInt(floor -> {
-//            int distance = Math.abs(floor - currentFloor);
-//            boolean isDirectionUp = floor > currentFloor;
-//            return isDirectionUp ? distance : -distance;
-//        }));
-
-        // TODO: Add detailed comments to explain the error handling logic
+        if(floorNum != currentFloor){
+            lamps.get(floorNum - 1).turnOn();
+        }
         if(packet.getData()[2] != 0){
             switch(packet.getData()[2]){
                 case (byte) 1:
                     try{
                         logger.debug("TRANSIENT ERROR DETECTED: PAUSED");
                         Thread.sleep(10000);
+                        logger.debug("TRANSIENT ERROR RESOLVED: CONTINUING");
                         break;
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
                 case (byte) 2:
-                    try{
-                        logger.debug("FATAL ERROR DETECTED: CEASED OPERATION");
-                        Thread.sleep(100000000);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
+                    logger.debug("FATAL ERROR DETECTED: CEASED OPERATION");
+                    state.setState(new FaultState(state));
+                    this.getDisplay().display();
+                    shutdown = true;
+                    return;
             }
         }
+        requested.add(floorNum);
         notifyAll();
     }
 
@@ -161,23 +159,34 @@ public class Elevator implements Runnable {
      * @param floorNum floor number to move to
      */
     public void move(int floorNum){
-        logger.debug("Closing door of elevator:" + id);
+        logger.debug("Closing doors at floor " + currentFloor);
         door.close();
-        logger.debug("Moving to floor " + floorNum + " from currentFloor " + currentFloor);
-        motor.move(floorNum);
-        logger.debug("Opening door of elevator:" + id);
+        logger.debug("Moving to floor " + floorNum + " from floor " + currentFloor);
+        motor.move(floorNum, passengerDestination);
+        logger.debug("Opening doors at floor " + currentFloor);
         door.open();
-        state = ElevatorStateEnum.LOADING_UNLOADING;
         if(subsystem.getConfig().getNumFloors() > floorNum) {
             lamps.get(floorNum-1).turnOff();
         }
+        logger.debug("Loading/unloading elevator at floor " + currentFloor);
+        state.setState(new UnloadingLoading(state));
+        this.getDisplay().display();
+        //Sleep for necessary elevator loading time
+        try {
+            Thread.sleep(subsystem.getConfig().getLoadingTime());
+        }catch(InterruptedException e){
+            throw new RuntimeException(e);
+        }
+        state.setState(new IdleState(state));
+        this.getDisplay().display();
+
     }
 
     /**
      * Sends an update packet to the Scheduler indicating that the doors are open.
      * This method creates a packet with the specified update type and sends it through the socket.
      */
-    private void sendUpdate() {
+    public void sendUpdate() {
         subsystem.sendSchedulerPacket(createPacket(UpdateType.OPEN_DOORS));
     }
 

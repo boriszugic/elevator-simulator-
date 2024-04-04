@@ -18,7 +18,7 @@ import java.util.HashMap;
  * to the elevator based on the given ID.
  */
 public class ElevatorSubsystem implements Runnable{
-    //Constants representing the scheduler and subsystem socket ports
+    //Constants representing the scheduler and elevator subsystem socket ports
     private static final int SCHEDULER_PORT = 64;
     private static final int PORT = 65;
     //Hashmap containing references to each elevator
@@ -37,13 +37,6 @@ public class ElevatorSubsystem implements Runnable{
     @Getter
     ElevatorGUI gui;
 
-    /**
-     * Constructor which initializes socket for UDP communication with scheduler,
-     * all elevators based on given configurations, and sends information about
-     * each elevator to the scheduler.
-     *
-     * @param config The configuration file utilized for instantiation variables.
-     */
     public ElevatorSubsystem(ConfigurationReader config){
         Elevator elevator;
         Thread temp;
@@ -74,7 +67,6 @@ public class ElevatorSubsystem implements Runnable{
         gui = new ElevatorGUI(this);
         for (int i = 1; i <= elevators.size(); i++){
             elevators.get(i).getDisplay().setGui(gui);
-            elevators.get(i).getDisplay().display();
         }
         gui.setVisible(true);
     }
@@ -93,14 +85,14 @@ public class ElevatorSubsystem implements Runnable{
             // end of initialization stage
             if (elevator == null) {
                 socket.send(new DatagramPacket(new byte[]{1}, 1,
-                        InetAddress.getLocalHost(), SCHEDULER_PORT));
-            } else {
+                            InetAddress.getLocalHost(), SCHEDULER_PORT));
+            }else{
                 socket.send(new DatagramPacket(new byte[]{
-                        (byte) elevator.getId(),
-                        (byte) elevator.getCurrentFloor(),
-                        (byte) elevator.getPort()},
-                        3, InetAddress.getLocalHost(),
-                        SCHEDULER_PORT));
+                            (byte) elevator.getId(),
+                            (byte) elevator.getCurrentFloor(),
+                            (byte) elevator.getPort()},
+                            3, InetAddress.getLocalHost(),
+                            SCHEDULER_PORT));
             }
         } catch(IOException e){
             throw new RuntimeException(e);
@@ -133,7 +125,7 @@ public class ElevatorSubsystem implements Runnable{
      */
     public synchronized void sendElevatorPacket(DatagramPacket received){
         int id = received.getData()[1];
-        Elevator elevator = elevators.get(id - PORT);
+        Elevator elevator = elevators.get(id-PORT);
         elevator.parseRequest(received);
     }
 
