@@ -121,8 +121,6 @@ public class Elevator implements Runnable {
                     i = 1;
                 }
                 int floorNum = requested.poll();
-                System.out.println(Arrays.toString(requested.toArray()));
-                System.out.println(floorNum);
                 state.setState((this.currentFloor >= floorNum) ?
                                new Moving_down(state) :
                                new Moving_up(state));
@@ -146,8 +144,14 @@ public class Elevator implements Runnable {
             switch(packet.getData()[2]){
                 case (byte) 1:
                     try{
+                        ElevatorState currentState = state.getState();
                         logger.debug("TRANSIENT ERROR DETECTED: PAUSED");
+                        state.setState(new Timeout(state));
+                        this.getDisplay().display();
+                        this.getDisplay().countdown();
                         Thread.sleep(10000);
+                        state.setState(currentState);
+                        this.getDisplay().display();
                         logger.debug("TRANSIENT ERROR RESOLVED: CONTINUING");
                         break;
                     } catch (InterruptedException e) {
