@@ -28,14 +28,11 @@ public class FloorSubsystem {
         ConfigurationReader config;
         try {
             config = new ConfigurationReader("./config.json");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (org.json.simple.parser.ParseException e) {
+        } catch (IOException | org.json.simple.parser.ParseException e) {
             throw new RuntimeException(e);
         }
 
         String inputFile = config.getInputFile();
-
         for (int i = 0; i < config.getNumFloors(); i++){
             dataArray.add(new LinkedList<>());
         }
@@ -52,6 +49,7 @@ public class FloorSubsystem {
                     System.err.println("Invalid input format: " + line);
                 }
             }
+
 
             // store info of each floor in scheduler
             for (int i = 0; i < config.getNumFloors(); i++){

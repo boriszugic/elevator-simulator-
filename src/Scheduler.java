@@ -159,35 +159,62 @@ public class Scheduler implements Runnable{
         byte[] data = packet.getData();
         state = SchedulerStateEnum.SCHEDULING;
         if (packet.getLength() == 3 && data[2] == 0){ // Elevator response
-            byte[] updateData = new byte[]{data[0]};
-            printPacketReceived(packet,"Elevator");
-            elevators.get((int)data[0]).setCurrFloor(data[0]);
-            return createFloorPacket(updateData, packet.getData()[1]);
+            return scheduleRequest(packet);
         }
         else if (packet.getLength() == 3 && isValid(data)){ //Elevator packet request to retrieve elevator
-            printPacketReceived(packet,"Floor");
-            // Choose elevator
-            ElevatorStructure elevator = chooseElevator((data[0] == 0 ? Direction.DOWN : Direction.UP), data[1]);
-            // Assign floor the chosen elevator
-            floors.get((int) data[1]).setElevatorPort(elevator.getPort());
-            return createElevatorPacket(data[1], elevator.getId());
+            return requestElevator(packet);
         }
         else if (packet.getLength() == 2) {
-            //Floor request when passenger pressed elevator button
-            printPacketReceived(packet, "Floor");
-            int floorNum = data[0];
-            if (floorNum <= floors.size()) {
-                // Create a packet to elevator port assigned to floor in the if statement above
-                DatagramPacket returnPacket = createElevatorPacket(floorNum, floors.get((int)data[1]).getElevatorPort());
-                elevators.get(floors.get((int)data[1]).getElevatorPort()).setState(ElevatorStateEnum.IDLE);
-                return returnPacket;
-            }
+            return serveRequest(packet);
         }
         // Error checking
         logger.error("Invalid request (Improper format).");
         throw new RuntimeException("Invalid request (Improper format).");
     }
+    /** Handles elevator updates requests to floor
+     *
+     * @param packet The DatagramPacket that is received
+     * @return The appropriate DatagramPacket to be sent
+     */
+    private DatagramPacket scheduleRequest(DatagramPacket packet) {
+        byte[] data = packet.getData();
+        byte[] updateData = new byte[]{data[0]};
+        printPacketReceived(packet,"Elevator");
+        elevators.get((int)data[0]).setCurrFloor(data[1]);
+        return createFloorPacket(updateData, packet.getData()[1]);
+    }
+    /** Handles floor requests for an elevator
+     *
+     * @param packet The DatagramPacket that is received
+     * @return The appropriate DatagramPacket to be sent
+     */
+    private DatagramPacket requestElevator(DatagramPacket packet) {
+        byte[] data = packet.getData();
+        printPacketReceived(packet,"Floor");
+        // Choose elevator
+        ElevatorStructure elevator = chooseElevator((data[0] == 0 ? Direction.DOWN : Direction.UP), data[1]);
+        System.out.println("Chosen elevator: "+elevator);
+        // Assign floor the chosen elevator
+        int floorNum = data[1];
 
+        floors.get((int) data[1]).setElevatorPort(elevator.getPort());
+        return createElevatorPacket(floorNum, elevator.getPort());
+    }
+    /** Handles destination requests from floor to elevator
+     *
+     * @param packet The DatagramPacket that is received
+     * @return The appropriate DatagramPacket to be sent
+     */
+    private DatagramPacket serveRequest(DatagramPacket packet) {
+        byte[] data = packet.getData();
+        //Floor request when passenger pressed elevator button
+        printPacketReceived(packet, "Floor");
+        int floorNum = data[0];
+        // Create a packet to elevator port assigned to floor in the if statement above
+        DatagramPacket returnPacket = createElevatorPacket(floorNum, floors.get((int)data[1]).getElevatorPort());
+        elevators.get(floors.get((int)data[1]).getElevatorPort()).setState(ElevatorStateEnum.IDLE);
+        return returnPacket;
+    }
     /**
      * Validates formatted data for elevator requests
      *

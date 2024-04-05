@@ -3,11 +3,12 @@ package src;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.io.IOException;
 import java.net.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
+
 
 public class Elevator implements Runnable {
 
@@ -88,11 +89,12 @@ private Display display;
         while(true){
             if(requested.isEmpty()){
                 pause();
+            }else{
+                int floorNum = requested.getFirst();
+                state = (this.currentFloor >= floorNum) ? ElevatorStateEnum.MOVING_DOWN : ElevatorStateEnum.MOVING_UP;
+                move(floorNum);
+                sendUpdate();
             }
-            int floorNum = requested.removeFirst();
-            state = (this.currentFloor >= floorNum) ? ElevatorStateEnum.MOVING_DOWN : ElevatorStateEnum.MOVING_UP;
-            move(floorNum);
-            sendUpdate();
         }
     }
 
@@ -102,7 +104,15 @@ private Display display;
     public synchronized void parseRequest(DatagramPacket packet){
         printPacketReceived(packet);
         int floorNum = packet.getData()[0];
-        requested.add(floorNum);
+        if(currentFloor!=floorNum){requested.add(floorNum);}
+
+        /**Request sorting algorithm --incomplete **/
+//        requested.sort(Comparator.comparingInt(floor -> {
+//            int distance = Math.abs(floor - currentFloor);
+//            boolean isDirectionUp = floor > currentFloor;
+//            return isDirectionUp ? distance : -distance;
+//        }));
+        notifyAll();
     }
 
     /**
@@ -111,10 +121,14 @@ private Display display;
      * @param floorNum floor number to move to
      */
     public void move(int floorNum){
+        System.out.println("[port:"+port+"] requests: "+requested.toString());
         logger.debug("Moving to floor " + floorNum + " from currentFloor " + currentFloor);
+
         motor.move(floorNum);
         door.open();
         state = ElevatorStateEnum.LOADING_UNLOADING;
+        requested.removeFirst();
+
     }
 
     /**
@@ -122,7 +136,10 @@ private Display display;
      * This method creates a packet with the specified update type and sends it through the socket.
      */
     private void sendUpdate() {
+
         subsystem.sendSchedulerPacket(createPacket(UpdateType.OPEN_DOORS));
+            System.out.println("Doors opened. boarding...");
+
     }
 
     /**
