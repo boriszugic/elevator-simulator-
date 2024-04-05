@@ -116,6 +116,53 @@ class FaultState implements ElevatorState {
 
 /**
  * Class implementing ElevatorState interface which represents the
+ * Timeout state of an elevator.
+ */
+class Timeout implements ElevatorState {
+
+    private ElevatorStateMachine state;
+
+    public Timeout(ElevatorStateMachine state){this.state = state;}
+    /**
+     * Method representing the elevator receiving a request in the
+     * fault state.
+     *
+     * @param context Current context of the state machine.
+     */
+    @Override
+    public void requestReceived(ElevatorStateMachine context, String direction) {}
+
+    /**
+     * Method representing the elevator receiving an arrival notification
+     * in the fault state.
+     *
+     * @param context Current context of the state machine.
+     */
+    public void Arrival(ElevatorStateMachine context) {}
+
+    /**
+     * Method representing the elevator receives a notification to move
+     * to the next request.
+     *
+     * @param context Current context of the state machine.
+     */
+
+    public void nextRequest(ElevatorStateMachine context, String direction){}
+
+    /**
+     * Overrides default toString() with a string
+     * representing the current state.
+     *
+     * @return String representation of state "Fault"
+     */
+    @Override
+    public String toString(){
+        return "Timeout";
+    }
+}
+
+/**
+ * Class implementing ElevatorState interface which represents the
  * Moving state of an elevator.
  */
 class Moving_up implements ElevatorState{
