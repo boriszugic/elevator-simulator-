@@ -66,11 +66,11 @@ public class ElevatorTests {
      */
     @Test
     public void testMove(){
-        elevator.move(2);
+        elevator.move();
         assertEquals(2, elevator.getCurrentFloor());
-        elevator.move(3);
+        elevator.move();
         assertEquals(3, elevator.getCurrentFloor());
-        elevator.move(25);
+        elevator.move();
         assertEquals(3, elevator.getCurrentFloor());
     }
 
