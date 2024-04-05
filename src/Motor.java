@@ -38,11 +38,6 @@ public class Motor {
             return;
         }
         if (elevator.getCurrentFloor() == floorNum){
-            try {
-                TimeUnit.MILLISECONDS.sleep(config.getMovingTime());
-            }catch(InterruptedException e) {
-                throw new RuntimeException(e);
-            }
             return;
         }
         /* -- solution for edge case of dropping off passenger inbetween a request - incomplete
@@ -64,6 +59,5 @@ public class Motor {
                     (floorNum - elevator.getCurrentFloor() > 0 ? 1 : -1));
             elevator.getDisplay().display();
         }
-        //elevator.getState().Arrival();
     }
 }

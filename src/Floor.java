@@ -5,6 +5,7 @@ import lombok.Getter;
 import java.io.IOException;
 import java.net.*;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.LinkedList;
 
 /**
@@ -74,17 +75,42 @@ public class Floor implements Runnable {
             RequestData request = requests.poll();
             this.destFloor = request.getRequestFloor();
             //Check current time compared to input time
-            while(request.getTime().compareTo(currentTime.getTime()) != 0){
-                currentTime = Calendar.getInstance();
-            }
-            printRequestInfo(request);
-            sendRequest(request.getDirection(), this.floorNum, id, request.getError());
-            if(request.getError() != 2){
-                waitRequest();
-            }
+            Date requestTime = request.getTime();
+            long time;
+            do{
+                time = System.currentTimeMillis();
+
+                //Check if current time has reached or passed the time of the request
+                if(time >= requestTime.getTime()){
+                    //Process the request
+                    processRequest(request);
+
+                    //Exit the loop once the request is processed
+                    break;
+                }
+                try {
+                    //Sleep for short duration before checking again
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            } while (time < requestTime.getTime());
         }
     }
-
+    /**
+     * Prints information about the request, sends the request to the elevator control system,
+     * and optionally waits for the request to be completed.
+     *
+     * @param request The request data containing information about the request, such as direction, floor number,
+     *                request ID, and any error status.
+     */
+    private void processRequest(RequestData request) {
+        printRequestInfo(request);
+        sendRequest(request.getDirection(), this.floorNum, id, request.getError());
+        if(request.getError() != 2){
+            waitRequest();
+        }
+    }
     /**
      * Sends a request to the Scheduler via DatagramSocket.
      *
