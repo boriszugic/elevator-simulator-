@@ -290,6 +290,8 @@ public class Scheduler implements Runnable{
 
             }
         }
+        //TODO: timeout fault check
+        //TODO: fix edge case with (6 down 1, 6 down 1, 6 down 1) all going to one elevator.
         else{
             int index = 0;
             ElevatorStructure functionalElevator = elevs.getFirst();
