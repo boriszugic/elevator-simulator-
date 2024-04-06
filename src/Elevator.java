@@ -185,7 +185,11 @@ public class Elevator implements Runnable {
             logger.debug("Closing doors at floor " + currentFloor);
             door.close();
             logger.debug("Moving to floor " + floorNum + " from floor " + currentFloor);
+            state.setState((this.currentFloor >= floorNum) ?
+                    new Moving_down(state) :
+                    new Moving_up(state));
             motor.move(floorNum, passengerDestination);
+
             logger.debug("Opening doors at floor " + currentFloor);
             door.open();
             if(subsystem.getConfig().getNumFloors() > floorNum) {
