@@ -46,7 +46,7 @@ public class Elevator implements Runnable {
     private boolean shutdown;
 
     //Queue of current requests
-    ArrayList<Integer> requested = new ArrayList<>();
+    PriorityQueue<Integer> requested = new PriorityQueue<>();
     private ArrayList<Integer> passengerDestination = new ArrayList<>();
 
     //Reference to subsystem utilized for synchronization
@@ -102,7 +102,11 @@ public class Elevator implements Runnable {
             e.printStackTrace();
         }
     }
-
+    public synchronized  void addRequest(int floorNum) {
+        requested.offer(floorNum);
+        //sortRequestedFloors(requested);
+        notifyAll();
+    }
     /**
      * Interface Runnable method which executes upon start of thread.
      * Runs forever and checks for requests added to the queue, then
@@ -112,6 +116,7 @@ public class Elevator implements Runnable {
     public void run() {
         int i = 0;
         while(!shutdown){
+
             if(requested.isEmpty()){
                 state.setState(new IdleState(state));
                 pause();
@@ -120,7 +125,8 @@ public class Elevator implements Runnable {
                     firstRequestTimestamp = Calendar.getInstance();
                     i = 1;
                 }
-                int floorNum = requested.getFirst();
+
+                int floorNum = requested.peek();
                 state.setState((this.currentFloor >= floorNum) ?
                         new Moving_down(state) :
                         new Moving_up(state));
@@ -166,9 +172,7 @@ public class Elevator implements Runnable {
                     return;
             }
         }
-        requested.add(floorNum);
-        sortRequestedFloors(requested);
-        notifyAll();
+        addRequest(floorNum);
     }
 
     /**
@@ -176,29 +180,31 @@ public class Elevator implements Runnable {
      *
      */
     public void move(){
-        int floorNum = requested.getFirst();
-        logger.debug("Closing doors at floor " + currentFloor);
-        door.close();
-        logger.debug("Moving to floor " + floorNum + " from floor " + currentFloor);
-        motor.move(floorNum, passengerDestination);
-        logger.debug("Opening doors at floor " + currentFloor);
-        door.open();
-        if(subsystem.getConfig().getNumFloors() > floorNum) {
-            lamps.get(floorNum-1).turnOff();
-        }
-        logger.debug("Loading/unloading elevator at floor " + currentFloor);
-        state.setState(new UnloadingLoading(state));
-        this.getDisplay().display();
-        //Sleep for necessary elevator loading time
-        try {
-            Thread.sleep(subsystem.getConfig().getLoadingTime());
-        }catch(InterruptedException e){
-            throw new RuntimeException(e);
-        }
-        requested.removeFirst();
-        state.setState(new IdleState(state));
-        this.getDisplay().display();
+        synchronized (requested){
+            int floorNum = requested.peek();
+            logger.debug("Closing doors at floor " + currentFloor);
+            door.close();
+            logger.debug("Moving to floor " + floorNum + " from floor " + currentFloor);
+            motor.move(floorNum, passengerDestination);
+            logger.debug("Opening doors at floor " + currentFloor);
+            door.open();
+            if(subsystem.getConfig().getNumFloors() > floorNum) {
+                lamps.get(floorNum-1).turnOff();
+            }
+            logger.debug("Loading/unloading elevator at floor " + currentFloor);
+            state.setState(new UnloadingLoading(state));
+            this.getDisplay().display();
+            //Sleep for necessary elevator loading time
+            try {
+                Thread.sleep(subsystem.getConfig().getLoadingTime());
+            }catch(InterruptedException e){
+                throw new RuntimeException(e);
+            }
 
+            state.setState(new IdleState(state));
+            this.getDisplay().display();
+            requested.remove(floorNum);
+        }
     }
     /**
      * Sorts a list of requested floors based on their proximity to the current floor.
@@ -207,12 +213,13 @@ public class Elevator implements Runnable {
      *
      * @param requested The list of floors requested by users.
      */
-    public void sortRequestedFloors(List<Integer> requested) {
-        requested.sort(Comparator.comparingInt(floor -> {
-            int distance = Math.abs(floor - currentFloor);
-            boolean isDirectionUp = floor > currentFloor;
-            return isDirectionUp ? distance : -distance;
-        }));
+    public synchronized void sortRequestedFloors(Queue<Integer> requested) {
+
+//        requested.sort(Comparator.comparingInt(floor -> {
+//            int distance = Math.abs(floor - currentFloor);
+//            boolean isDirectionUp = floor > currentFloor;
+//            return isDirectionUp ? distance : -distance;
+//        }));
     }
     /**
      * Sends an update packet to the Scheduler indicating that the doors are open.
