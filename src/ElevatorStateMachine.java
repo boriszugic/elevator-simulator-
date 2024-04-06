@@ -47,11 +47,13 @@ class IdleState implements ElevatorState {
      */
 
     public void nextRequest(ElevatorStateMachine context, String direction){
-        if(direction.equals("UP")){
-            context.setState(new Moving_up(state));
-        }
-        else{
-            context.setState(new Moving_down(state));
+        synchronized (context){
+            if(direction.equals("UP")){
+                context.setState(new Moving_up(state));
+            }
+            else{
+                context.setState(new Moving_down(state));
+            }
         }
     }
 
@@ -348,7 +350,7 @@ public class ElevatorStateMachine {
      * Method representing when a floor button is pressed and a request
      * for an elevator is received.
      */
-    public void requestReceived(ElevatorStateMachine context, String direction) {
+    public synchronized void requestReceived(ElevatorStateMachine context, String direction) {
         state.requestReceived(this, direction);
     }
 
@@ -356,7 +358,7 @@ public class ElevatorStateMachine {
      * Method representing when an elevator is given a notification
      * that it has arrived at a destination.
      */
-    public void Arrival(ElevatorStateMachine context) {
+    public synchronized void Arrival(ElevatorStateMachine context) {
         state.Arrival(this);
     }
 
@@ -364,7 +366,7 @@ public class ElevatorStateMachine {
      * Method representing when an elevator has completed a request and transitions
      * to a new state for the next request.
      */
-    public void nextRequest(ElevatorStateMachine context, String direction) {
+    public synchronized void nextRequest(ElevatorStateMachine context, String direction) {
         state.nextRequest(this, direction);
     }
 
