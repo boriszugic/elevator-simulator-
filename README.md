@@ -83,6 +83,6 @@ file which can be modified to test as desired.
       - Boris Zugic: GUI, Elevator State Machine
       - Cole McPherson: 
       - Johnny Nguyen:
-      - Evan Baldwin: 
+      - Evan Baldwin: Elevator fault handling
     - Unit Testing:
       - Evan Baldwin: Elevator, Floor, Scheduler, Integration Tests
