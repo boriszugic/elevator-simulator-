@@ -286,12 +286,34 @@ public class Scheduler implements Runnable{
                         new Moving_up(stateMachine) :
                         new Moving_down(stateMachine);
                 stateMachine.setState(newState);
+                return suitableElevator.get();
+
             }
         }
+        //TODO: timeout fault check
+        //TODO: fix edge case with (6 down 1, 6 down 1, 6 down 1) all going to one elevator.
         else{
-            return elevs.getFirst();
-        }
+            int index = 0;
+            ElevatorStructure functionalElevator = elevs.getFirst();
+            while (functionalElevator.getState().getState().toString().equals("Fault")) {
+                elevs.removeFirst();
+                functionalElevator = elevs.getFirst();
+            } //Make a check for timeout state in the future.
+                ElevatorStateMachine stateMachine = functionalElevator.getState();
+                ElevatorState newState = functionalElevator.getCurrFloor() >
+                        floorNum ? new Moving_up(stateMachine) : new Moving_down(stateMachine);
+                stateMachine.setState(newState);
+
+                logger.debug("Chose Elevator " + functionalElevator.getId());
+            System.out.println(functionalElevator.getId());
+                return functionalElevator;
+            }
+
         logger.debug("Chose Elevator " + suitableElevator.get().getId());
+        ElevatorStateMachine stateMachine = suitableElevator.get().getState();
+        ElevatorState newState = suitableElevator.get().getCurrFloor() >
+                floorNum ? new Moving_up(stateMachine) : new Moving_down(stateMachine);
+        stateMachine.setState(newState);
         return suitableElevator.get(); // Return the found elevator
     }
 
