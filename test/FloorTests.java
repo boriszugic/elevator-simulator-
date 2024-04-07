@@ -22,9 +22,7 @@ public class FloorTests {
      */
     @Before
     public void setUp(){
-        floor = new Floor();
-        String[] args = {"testinput.txt", "2"};
-        FloorSubsystem.main(args);
+        floor = new Floor("test");
     }
 
     /**
@@ -35,6 +33,7 @@ public class FloorTests {
     public void testCreatePacket(){
         DatagramPacket data = floor.createPacket(numFloors);
         assertNotNull(data);
+        assertEquals((byte) numFloors, data.getData()[0]);
     }
 
     /**
@@ -43,7 +42,8 @@ public class FloorTests {
      */
     @Test
     public void testParse() throws ParseException {
-        String[] test = {"23:16:10.0", "1", "Up", "2"};
+        String[] test = {"23:16:10.0", "1", "Up", "2", "0"};
+        FloorSubsystem.addDataArray(3);
         FloorSubsystem.processInput(test);
         assertNotNull(FloorSubsystem.getDataArray());
     }

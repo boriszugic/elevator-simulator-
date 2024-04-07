@@ -22,14 +22,13 @@ public class Scheduler implements Runnable{
     @Getter
     private HashMap<Integer, ElevatorStructure> elevators;
     @Getter
-    private SchedulerStateMachine state;
+    private SchedulerStateMachine state = new SchedulerStateMachine();
     private ArrayList<DatagramPacket> requestQueue;
 
     /**
      * Private constructor to prevent instantiation from outside the class.
      */
     private Scheduler() {
-        state = new SchedulerStateMachine();
         state.setState(new Idle()); //Initialize scheduler in IDLE state
         try {
             this.socket = new DatagramSocket(port);

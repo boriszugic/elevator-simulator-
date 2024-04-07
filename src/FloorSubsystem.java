@@ -139,4 +139,16 @@ public class FloorSubsystem {
     public static LinkedList<RequestData> getRequests(int floorNum) {
         return dataArray.get(floorNum - 1);
     }
+
+    /**
+     * Testing method utilized for establishing data array
+     * without input file.
+     *
+     * @param floors Number of floors to add
+     */
+    public static void addDataArray(int floors){
+        for (int i = 1; i <= floors; i++){
+            dataArray.add(new LinkedList<>());
+        }
+    }
 }

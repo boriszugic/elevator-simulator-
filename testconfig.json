@@ -1,6 +1,6 @@
 {
   "floors": 3,
-  "elevators": ,
+  "elevators": 3,
   "input_file": "input.txt",
   "door_open_time": 2000,
   "door_close_time": 2000,

@@ -59,6 +59,18 @@ public class Floor implements Runnable {
     }
 
     /**
+     * Constructor for floor instance necessary for testing, omits creation
+     * of UDP socket.
+     *
+     * @param test Parameter for differentiating constructor
+     */
+    public Floor(String test){
+        this.id = getNextId();
+        this.logger = new Logger(System.getProperty("user.home") + "/floor" + this.id + ".log");
+        this.floorNum = getNextFloorNum();
+    }
+
+    /**
      * Interface Runnable method which assigns a linked list for requests and
      * checks for input requests from the subsystem while there are requests present.
      *
@@ -180,6 +192,20 @@ public class Floor implements Runnable {
         if (packet.getData()[0] != 0) {
             board();
         }
+    }
+
+    /**
+     * Testing method utilized for sending example packets from
+     * scheduler to floor.
+     *
+     * @param packet The packet to be parsed.
+     * @return "Boarding" if packet is correct, "Error in packet" otherwise
+     */
+    public String testParseRequest(DatagramPacket packet){
+        if(packet.getData()[0] != 0){
+            return "Boarding";
+        }
+        return "Error in packet";
     }
 
     /**
