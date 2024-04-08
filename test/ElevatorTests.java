@@ -36,15 +36,13 @@ public class ElevatorTests {
 
     /**
      * Initialize the testing environment with two elevators.
-     *
-     /
-     /*
+     */
+
     @Before
     public void setUp(){
         elevator = subsystem.getElevators().get(1);
-        stateElevator = new ElevatorStructure(1, ElevatorStateMachine.IDLE, 1, 0);
+        stateElevator = new ElevatorStructure(1, elevatorStateMachine, 1, 0);
     }
-    */
 
     /**
      * This method tests that the elevators are initialized in the proper state.
@@ -66,6 +64,9 @@ public class ElevatorTests {
      */
     @Test
     public void testMove(){
+        elevator.addRequest(2);
+        elevator.addRequest(3);
+        elevator.addRequest(4);
         elevator.move();
         assertEquals(2, elevator.getCurrentFloor());
         elevator.move();
@@ -79,15 +80,14 @@ public class ElevatorTests {
      * machine can successfully change states from idling to moving
      * and unloading/loading.
      */
-    //@Test
-    /*
+    @Test
     public void testStates(){
         assertEquals("Idle", elevatorStateMachine.getState().toString());
-        elevatorStateMachine.requestReceived();
-        assertEquals("Moving", elevatorStateMachine.getState().toString());
-        elevatorStateMachine.Arrival();
+        elevatorStateMachine.requestReceived(elevatorStateMachine, "UP");
+        assertEquals("Moving_up", elevatorStateMachine.getState().toString());
+        elevatorStateMachine.Arrival(elevatorStateMachine);
         assertEquals("Unloading/Loading", elevatorStateMachine.getState().toString());
     }
-    */
+
 
 }

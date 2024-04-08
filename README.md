@@ -77,12 +77,12 @@ file which can be modified to test as desired.
 
 - Iteration 5:
     - UML Class, Sequence and Timing Diagrams:
-      - Evan Baldwin:
+      - Evan Baldwin: Timing, Elevator State Diagrams
       - Boris Zugic: Sequence Diagram
     - Coding:
       - Boris Zugic: GUI, Elevator State Machine
       - Cole McPherson: 
       - Johnny Nguyen:
-      - Evan Baldwin: 
+      - Evan Baldwin: Elevator fault handling
     - Unit Testing:
-      - Evan Baldwin:
+      - Evan Baldwin: Elevator, Floor, Scheduler, Integration Tests

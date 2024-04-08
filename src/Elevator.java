@@ -17,7 +17,8 @@ public class Elevator implements Runnable {
     private static int nextPortNum = 66;
     private static int nextId = 1;
     @Getter
-    private final int port;
+    @Setter
+    private int port;
     @Getter
     private final int id;
     @Getter
@@ -46,6 +47,7 @@ public class Elevator implements Runnable {
     private boolean shutdown;
 
     //Queue of current requests
+    @Getter
     PriorityQueue<Integer> requested = new PriorityQueue<>();
     private ArrayList<Integer> passengerDestination = new ArrayList<>();
 

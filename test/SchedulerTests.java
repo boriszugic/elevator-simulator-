@@ -29,23 +29,23 @@ public class SchedulerTests {
         }
     }
     private final int numFloors = 3;
-    ArrayList<Object> testparam = new ArrayList<>();
+    ElevatorStateMachine stateMachine = new ElevatorStateMachine();
     /**
      * Initialize the testing environment with the default
      * parameters for a scheduler.
      */
-    /*
+
     @Before
     public void setUp(){
         scheduler = new Scheduler("test");
         for (int i = 1; i <= config.numElevators; i++){
-            scheduler.addElevator(new ElevatorStructure(i, ElevatorStateEnum.IDLE, 1, 1));
+            scheduler.addElevator(new ElevatorStructure(i, stateMachine, 1, 1));
         }
         for (int i = 1; i <= config.numFloors; i++){
             scheduler.addFloor(new FloorStructure(i, i));
         }
     }
-    */
+
 
     /**
      * This method tests whether the default parameters of the
