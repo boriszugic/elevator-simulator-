@@ -79,10 +79,11 @@ file which can be modified to test as desired.
     - UML Class, Sequence and Timing Diagrams:
       - Evan Baldwin: Timing, Elevator State Diagrams
       - Boris Zugic: Sequence Diagram
+      - Cole McPherson: Updated UML Class Diagram
     - Coding:
       - Boris Zugic: GUI, Elevator State Machine
-      - Cole McPherson: 
-      - Johnny Nguyen:
+      - Cole McPherson:  Fixed edge cases with Scheduler, Tweaked ElevatorStateMachine, fixed bug with elevator states
+      - Johnny Nguyen: Elevator Request Handling, Floor Request Timings w/ Faults
       - Evan Baldwin: Elevator fault handling
     - Unit Testing:
       - Evan Baldwin: Elevator, Floor, Scheduler, Integration Tests
